@@ -1,6 +1,16 @@
-#! /bin/sh
+#!/bin/sh
 
+# debian
 apt-get install perl
+
+perl -MCPAN -e 'install HTML::TagParser' # not in debian
+apt-get install libhtml-linkextractor-perl libwww-perl libwww-perl liburi-perl libcss-perl libhttp-date-perl libgetopt-long-descriptive-perl
+
+apt-get install curl libcurl3 libcurl3-dev
+
+apt-get install python
+
+# fedora
 yum install perl
 
 perl -MCPAN -e 'install HTML::TagParser'
@@ -12,11 +22,6 @@ perl -MCPAN -e 'install CSS'
 perl -MCPAN -e 'install HTTP::Date'
 perl -MCPAN -e 'install Getopt::Long'
 
-
-apt-get install curl libcurl3 libcurl3-dev
 yum install curl
 
-apt-get install python
 yum install python
-
-
