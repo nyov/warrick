@@ -36,6 +36,12 @@ sub start {
 		{
 			push(@localURIs,$url);
 		}
+	} elsif($tagname eq 'style') {
+		my $url = $attr->{ src };
+		if($url)
+		{
+			push(@localURIs,$url);
+		}
 	}
         #print "\n==========================================\n";
         #print @localURIs;

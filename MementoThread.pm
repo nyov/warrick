@@ -1,20 +1,20 @@
 package MementoThread;
 
-use mementoParser;
 use URI;
 
 use FindBin;
 use lib "$FindBin::Bin";
-
+use MementoParser;
 #constructor
 sub new {
 
     my $self = {
-        URI     => undef,   #String, This is the input URI that we need to retrieve its mementos 
+        URIQ     => undef,   #String, This is the input URI that we need to retrieve its mementos 
+        URIR    => undef,
         Text    => undef,   #String, the URI content
         RedirectionList   => undef,
         FollowEmbedded  => 0,
-        TimeGate => "http://mementoproxy.cs.odu.edu/aggr/timegate",
+        TimeGate => "http://mementoproxy.cs.odu.edu/aggr/timegate/",
         Mode => 0, #0 is the default mode (Relaxed)
         RedirectionPolicy => undef,
         DateTime =>undef,
@@ -22,6 +22,9 @@ sub new {
         Override => 0,
         RobotsTG => undef,
         ReplaceFile => undef,
+        AllParams=>undef,
+        HeadParams=>undef,
+        memento=>undef,
         Headers => {
                     status=> undef,
                     vary => 0,  #Vary default false
@@ -36,7 +39,8 @@ sub new {
                     Okay => 0,
                     TimeGate => undef,
                     TimeMap => undef,
-                    Location =>undef
+                    Location =>undef,
+                    OneMemento => 0
          }
     };
     if($self->{Debug} == 1){
@@ -48,7 +52,7 @@ sub new {
 
 sub setURI {
     my ( $self, $nURI ) = @_;
-    $self->{URI} = $nURI if defined($nURI);
+    $self->{URIQ} = $nURI if defined($nURI);
 
 }
 
@@ -87,34 +91,81 @@ sub setReplaceFile() {
     $self->{ReplaceFile} = $lReplaceFile if defined($lReplaceFile);
 }
 
+sub setParams(){
+
+    my ($self, @lParams ) = @_;
+    #Here we may have problem with -H and --header for multi values
+    $self->{AllParams} = join(' ', map { $_ eq '' || /^--/ ? $_ : "'" . $_ . "'" } @lParams);
+    $self->{HeadParams} = $self->{AllParams} ;
+
+    $_  =  $self->{HeadParams} ;
+  
+    my @removedSwitches = ("-a","--append","-B","--use-ascii","--tcp-nodelay",
+    "-e","--referer","--compressed","--create-dirs","--crlf","-f",
+    "--fail","--ftp-create-dirs","--ftp-pasv","--ftp-skip-pasv-ip",
+    "--ftp-ssl","--ftp-ssl-reqd","-g","--globoff","-G","--get","-h","--help",
+    "--ignore-content-length","-I","--head","-l","--list-only","-L","--location",
+    "--location-trusted","-M","--manual","-N","--no-buffer","-O","--remote-name",
+    "-R","--remote-time","-s","--silent","-S","--show-error","--trace-time","-v",
+    "--verbose","-V","--version","-y","--speed-time","-Y","--speed-limit","-0",
+    "--http1.0","--3p-quote","--3p-url","--3p-user","-#","--progress-bar");
+
+    foreach $switch (@removedSwitches)
+    {
+        $self->{HeadParams}=~ s/$switch / /g;
+    }
+ 
+
+    my @removedSwitches2 = ("-c","--cookie-jar","-C","--continue-at","-d",
+    "--data","--data-ascii","--data-binary","-D","--dump-header",
+    "--connect-timeout","-F","--form","--form-string","-H","--header","-m",
+    "--max-time","--max-redirs","--max-filesize","-o","--output","-P",
+    "--ftp-port","-Q","--quote","-r","--range","--random-file","--retry",
+    "--retry-delay","--retry-max-time","--stderr","-t","--telnet-option",
+    "--trace","--trace-ascii","-z","--time-cond","-T","--upload-file","--url");
+
+     foreach $switch (@removedSwitches2)
+    {
+        $self->{HeadParams}=~ s/$switch \S*/ /g;
+    }
+
+    $self->{HeadParams}= $self->{HeadParams}." -s ";
+
+    $self->{AllParams} = $self->{AllParams} ." -s ";
+   # print "All Params: ". $self->{AllParams} ."\n";
+   # print "Head Params: ".$self->{HeadParams} ."\n";
+    #$remvoedSwitches = '(\-c |\-\-cookie\-jar|\-C |\-\-continue\-at|\-d |\-\-data|\-\-data\-ascii|\-\-data\-binary|\-D |\-\-dump\-header|\-\-connect\-timeout|\-F |\-\-form|\-\-form\-string|\-H |\-\-header|\-m |\-\-max\-time|\-\-max\-redirs|\-\-max\-filesize|\-o |\-\-output|\-P |\-\-ftp\-port|\-Q |\-\-quote|\-r |\-\-range|\-\-random\-file|\-\-retry|\-\-retry\-delay|\-\-retry\-max\-time|\-\-stderr|\-t |\-\-telnet\-option|\-\-trace|\-\-trace\-ascii|\-z |\-\-time\-cond|\-T |\-\-upload\-file|\-\-url)*';
+    #$self->{HeadParams}=~ s/$remvoedSwitches//;
+  
+}
 sub head {
+    my ($self) = @_;
     if($self->{Debug} == 1){
         print "DEBUG: Starting with head command to determine resource type\n";
     }
-    my ($self) = @_;
     my $acceptDateTimeHeader = "";
     if(length($self->{DateTime}) != 0){
-        $acceptDateTimeHeader = " -H \"Accept-Datetime: ".$self->{DateTime}." \" ";
+        $acceptDateTimeHeader = " -H 'Accept-Datetime: ".$self->{DateTime}." ' ";
     }
 
-    my $command = "curl -I $acceptDateTimeHeader  $self->{URI} ";
+    my $command = "curl -I $self->{HeadParams} $acceptDateTimeHeader '$self->{URIQ}' ";
     if($self->{Debug} == 1){
         print "DEBUG: " .$command ."\n";
     }
     my $headCmd = ` $command `;
     if($self->{Debug} == 1){
-        print "=============================================================\n";
         print $headCmd;
-        print "=============================================================\n";
+   #     print "=============================================================\n";
     }
     #Start to look to the different Headers options
     $self->parseHeaders($headCmd);
     
     #In some cases, we need to lookup to URI format itself
-    $self->determineResourceType();
-    $self->discover_tg_robots();
-    $self->selectTimeGate();
+  #  $self->determineResourceType();
+   # $self->discover_tg_robots();
+ #   $self->selectTimeGate();
 
+    $self->{TimeGate} =~ s/\/$//;
     if($self->{Debug} == 1){
         print "\nDEBUG: Resource Type: ". $self->{Info}->{Type} ."\n" ; 
     }
@@ -131,21 +182,23 @@ sub selectTimeGate(){
 
     if($self->{Override} == 1){
         #The timegate will be as it's in $self->{TimeGate}
+        #Remove the others values like $self->{Info}->{TimeGate}
+        $self->{Info}->{TimeGate}  =undef;
         if($self->{Debug} == 1){
             print "DEBUG: Override case:Accepted\n";        
-            print "TimeGate: " .$self->{TimeGate};
+            print "TimeGate: " .$self->{TimeGate}."\n"
         }
-        return;
+#        return;
 
     } elsif (  $self->{Info}->{Type} eq "TimeGate"){
-        $self->{TimeGate} = $self->{URI};
+        $self->{TimeGate} = $self->{URIQ};
 
         if($self->{Debug} == 1){
             print "DEBUG: Resource Type is TimeGate case: Accepted\n";        
-            print "TimeGate: " .$self->{TimeGate};
+            print "TimeGate: " .$self->{TimeGate}."\n"
         }
 
-        return;
+ #       return;
         #Additional steps required in calling the function the memento
         #or, we can remove one of these fields at all
 
@@ -154,46 +207,181 @@ sub selectTimeGate(){
         $self->{TimeGate}= $self->{Info}->{TimeGate} ;
         if($self->{Debug} == 1){
             print "DEBUG: TimeGate is defined in Link header case: Accepted\n";        
-            print "TimeGate: " .$self->{TimeGate};
+            print "TimeGate: " .$self->{TimeGate}."\n"
         }
-        return;
-    } elsif (defined($self->{RobotsTG})){
+        $self->{URIQ} =  $self->{TimeGate};
 
-        $self->{TimeGate} = $self->{RobotsTG};
-        if($self->{Debug} == 1){
-            print "DEBUG: TimeGate is discovered in robots.txt case: Accepted\n";        
-            print "TimeGate: " .$self->{TimeGate};
-        }
-        return;
-    }
+ #       return;
+    } else {
+    
     if($self->{Debug} == 1){
-        print "DEBUG: TimeGate is not changed\n";        
-        print "TimeGate: " .$self->{TimeGate};
+         print "DEBUG: TimeGate is not changed\n";        
+         print "TimeGate: " .$self->{TimeGate}."\n";
+     }
+             $self->{URIQ} =  $self->{TimeGate}."/".$self->{URIQ};
+
     }
+# elsif (defined($self->{RobotsTG})){
+
+ #       $self->{TimeGate} = $self->{RobotsTG};
+ #       if($self->{Debug} == 1){
+ #           print "DEBUG: TimeGate is discovered in robots.txt case: Accepted\n";        
+ #           print "TimeGate: " .$self->{TimeGate};
+ #       }
+  #      return;
+#    }
+
+
+    
+ 
  
     return;
 }
 
+sub findMemento(){
+
+    my ($self) = @_;
+    if($self->{Debug} == 1){
+     print "=============================================================\n";
+       print "DEBUG: in findMemento() URIQ: $self->{URIQ}\n";        
+     print "-------------------------------------------------------------\n";
+   }
+
+    $self->head();
+    
+    my $tg_flag=0;
+
+    # Case 1, bad request 400
+    if($self->{status} == 400){
+        # Type = bad request
+        return $self->{URIQ};
+    }
+   #########################
+   # TEST - 0
+    if($self->{Headers}->{vary} == 1){ # It is a TimeGate
+        if($self->{Debug} == 1)  {print "DEBUG: TEST - 0 YES\n"};     
+        $tg_flag=1;
+        $self->{URIR} = $self->{URIQ};
+   } else {
+        if($self->{Debug} == 1)  {print "DEBUG: TEST - 0 NO\n"};     
+
+    }
+   #########################
+   # TEST - 1
+    my $rewrittenURI = $self->unrewriteURI($self->{URIQ});
+    if( length($self->{Headers}->{MementoDT})>0 or length($rewrittenURI)>0 ){
+        
+
+        $tg_flag = 0;
+        $self->{URIR} = '';
+        #set uri-r = blank
+    #    print "=============================================================\n";
+
+         if($self->{Headers}->{status} > 300 and $self->{Headers}->{status} <400){
+            #Follow
+            if($self->{Debug} == 1) {print "DEBUG: TEST - 1 YES FOLLOW\n"};     
+             return $self->follow();
+        } else {
+            if($self->{Debug} == 1) {print "DEBUG: TEST - 1 YES MEMENTO\n"};     
+
+                $self->{memento}=$self->{URIQ};
+            return $self->{URIQ};
+        }
+    }else {
+        if($self->{Debug} == 1)  {print "DEBUG: TEST - 1 NO\n"};     
+
+    }
+   #########################
+   # TEST - 2 -- POOR man
+    if($self->{Headers}->{status} > 299 and $self->{Headers}->{status} < 400){
+        if($self->{Debug} == 1){  print "DEBUG: TEST - 2 YES\n"};     
+
+        #FOLLOW
+  #      print "=============================================================\n";
+
+        return $self->follow();
+
+    }else {
+        if($self->{Debug} == 1)  {print "DEBUG: TEST - 2 NO\n"};     
+
+    }
+   #########################
+   # TEST - 3
+    if($tg_flag == 1 and $self->{Headers}->{status} >399){
+        if($self->{Debug} == 1) { print "DEBUG: TEST - 3 YES\n"};     
+   #     print "=============================================================\n";
+
+        return $self->{URIQ};
+    }else {
+        if($self->{Debug} == 1)  {print "DEBUG: TEST - 3 NO\n"};     
+
+    }
+
+   #########################
+   # TEST - 4
+   if( $self->{Info}->{TimeGate}!= ''){
+         if($self->{Debug} == 1)  {print "DEBUG: TEST - 4 YES\n"};     
+       $tg_flag = 1;
+       $self->{URIQ} = $self->{Info}->{TimeGate};
+  #      print "=============================================================\n";
+
+        return  $self->findMemento(); 
+   } else {
+         if($self->{Debug} == 1)  {print "DEBUG: TEST - 4 NO\n"};     
+
+        $self->{URIR} = $self->{URIQ};
+        $self->selectTimeGate();
+   #     print "=============================================================\n";
+
+        return  $self->findMemento(); 
+    }
+   
+      return $self->{URIQ};
+}
+
+sub follow{
+    my ($self) = @_;
+
+    if( length($self->{Headers}->{Location} )>0){
+    if($self->{Debug} == 1)  {print "DEBUG: follow Location\n"};     
+
+        $self->{URIQ} = $self->{Headers}->{Location};
+  #      print "=============================================================\n";
+
+        $self->findMemento();
+    } else {
+    if($self->{Debug} == 1)  {print "DEBUG: follow ERROR \n"};     
+   #     print "=============================================================\n";
+
+        return $self->{URIQ};
+    }
+}
+
 sub parseHeaders {
+
+   my ($self, $tmp) = @_;
+   $_ = $tmp;
    if($self->{Debug} == 1){
         print "DEBUG: In parsing header function\n";
    }
-   my ($self, $tmp) = @_;
-   $_ = $tmp;
 
-   if( m/Memento-Datetime:.*\n/){
+    $self->{Headers}->{MementoDT}=undef;
+    $self->{Headers}->{vary} = 0;
+    $self->{Headers}->{status}= 0;   
+    $self->{FollowEmbedded} = 0;
+    $self->{Headers}->{Link} =undef;
+    $self->{Headers}->{Location} = undef;
+
+    if( m/Memento-Datetime:.*\n/){
         $self->{Headers}->{MementoDT} = substr($&, 18);
-     #   print $self->{Headers}->{MementoDT};
     }
 
     if( m/Vary:.*accept-datetime.*\n/){
         $self->{Headers}->{vary} = 1;
-    #    print $self->{Headers}->{vary} ;
      }
 
     if( m/HTTP\/1\.\d\s\d\d\d\s.*\n/ ){
         $self->{Headers}->{status}= int(substr($&,9,3));   
-      #  print  $self->{Headers}->{status};
     }
 
     if( m/Content\-Type:.*\n/){
@@ -203,31 +391,37 @@ sub parseHeaders {
     }
     
     if( m/Link:.*\n/ ){
+         
         $self->{Headers}->{Link} =$&;
 
-        my @links = (m/<[^>]*>;\s?rel=\"?[^\"]*\"?/g);
+        my @links = (m/<[^>]*>;[^<]*rel=\"?[^\"]*\"?/g);
 
-                for(my $i=0 ; $i<= $#links ; $i++){
-               @line = split( /;/,$links[$i] ) ;
+        for(my $i=0 ; $i<= $#links ; $i++){
 
-               if($line[1] =~ m/.*original.*/ ){
+            @line = split( /;/,$links[$i] ) ;
 
-                    $self->{Info}->{Original} = substr($line[0], 1, length($line[0]) -2);
+            if($links[$i] =~ m/.*original.*/ ){
+                $self->{Info}->{Original} = substr($line[0], 1, length($line[0]) -2);
+            }elsif ($links[$i] =~ m/.*timegate.*/ ){
+                $self->{Info}->{TimeGate} = substr($line[0], 1, length($line[0]) -2);
+            }elsif ($links[$i] =~ m/.*timemap.*/ ){
+                $self->{Info}->{TimeMap} = substr($line[0], 1, length($line[0]) -2);
+            }elsif ($links[$i] =~ m/.*first last memento.*/ ){
+                $self->{Info}->{OneMemento} = 1;
+                $self->{memento} = substr($line[0], 1, length($line[0]) -2);
 
-               }elsif ($line[1] =~ m/.*timegate.*/ ){
-
-                   $self->{Info}->{TimeGate} = substr($line[0], 1, length($line[0]) -2);
-
-               }elsif ($line[1] =~ m/.*timemap.*/ ){
-
-                   $self->{Info}->{TimeMap} = substr($line[0], 1, length($line[0]) -2);
-
-               }
+              
+            }
         }
+
     }
     if( m/Location:.*\n/ ){
 
         $self->{Headers}->{Location} = substr($&,10);
+        #This is a special case for the Location header that has a trailer \r that affects the subsequent steps
+        if($self->{Headers}->{Location} =~ /\r$/){
+            $self->{Headers}->{Location} =substr($self->{Headers}->{Location} , 0,length($self->{Headers}->{Location} )-2);
+        }
         
         
     }
@@ -240,57 +434,6 @@ sub parseHeaders {
     }
 }
 
-sub determineResourceType {
-
-    my ($self) = @_;
-    
-    #Case 1, 2, 3
-    if($self->{status} == 200 && defined($self->{Headers}->{MementoDT})){
-        $self->{Info}->{Type} = "Memento";
-        
-        if( length( $self->{Info}->{Original} ) != 0) {
-        
-            $self->{URI} = $self->{Info}->{Original} ;
-             return;
-        } 
-      
-    }
-    
-    # Review if the URI in the whiteList
-    my $rewrittenURI = $self->unrewriteURI($self->{URI});
-    if( length($rewrittenURI) >0){
-        $self->{URI} = $rewrittenURI;  
-        $self->{Info}->{Type} = "Memento";
-        return;
-    }
-
-    #case 5, 6
-    if( $self->{Headers}->{vary} == 1  and $self->{Headers}->{status} eq 302){
-        $self->{Info}->{Type} = "TimeGate";
-        
-        return;
-    }
-
-    if( $self->{Headers}->{status} == 302 
-            && length($self->{Info}->{Original} ) != 0){
-       
-        #intermdeiate Okay
-            
-    }elsif (length($self->{Info}->{Original} ) !=0){
-        #Type memento
-        #Not Okay
-    }
-
-    
-    
-    #Check for the time bubble
-
-
-    #Get the URI from the memento URI
-    
-    
-}
-
 sub discover_tg_robots {
      my ($self, @params) = @_;
     if($self->{Debug} == 1){
@@ -298,10 +441,10 @@ sub discover_tg_robots {
     }
     my $robotTG = '';
   
-    my $urlObj = URI->new($self->{URI});
+    my $urlObj = URI->new($self->{URIQ});
     
     my $host =  "http://".$urlObj->host( ) .'/robots.txt' ;
-    my $robots = `curl -L $host`;
+    my $robots = `curl $self->{HeadParams} -L $host`;
 
     my @lines = split('\n',$robots);
     
@@ -312,7 +455,7 @@ sub discover_tg_robots {
         } elsif(index($_, 'Archived') ==0){
 
                 
-            if( $_ eq '*' or index($self->{URI}, substr( $_, 10, length ($_)-11)) > -1){
+            if( $_ eq '*' or index($self->{URIQ}, substr( $_, 10, length ($_)-11)) > -1){
                 
                 if($self->{Debug} == 1){
                     print "\nDEBUG: A new TimeGate is discovered through (robots.txt): $robotTG";
@@ -328,11 +471,13 @@ sub discover_tg_robots {
 }
 
 sub process_uri {
-    my ($self, @params) = @_;
+    my ($self) = @_;
     
     if($self->{Debug} == 1){
         print "DEBUG: in process URI\n";
     }
+    
+    my $URIFinal = $self->findMemento();
 
     my $acceptDateTimeHeader = '';
     if(length($self->{DateTime}) != 0){
@@ -340,25 +485,21 @@ sub process_uri {
     }
 
     my  $command ='';
+    my $commandTail = '';
     #it has a problem with different timegates values
     # Ex. mcurl.pl -I -L --datetime "Fri, 23 July 2009 12:00:00 GMT"  http://lanlsource.lanl.gov/hello
     # Ex. mcurl.pl -I -L --datetime "Fri, 23 July 2009 12:00:00 GMT"  http://mementoproxy.cs.odu.edu/aggr/timegate/http://www.digitalpreservation.gov/
 
-    if(     defined( $self->{Info}->{TimeGate} ) 
-        or  $self->{Info}->{Type} eq "TimeGate"){
-        #This is part should be updated to check if the concatenation between the URI and TimeGate required or not
-        $command = "curl @params $acceptDateTimeHeader ".  $self->{TimeGate};
 
-    } else {
+    $commandTail = " $acceptDateTimeHeader '" .  $URIFinal . "'";
 
-       $command = "curl @params $acceptDateTimeHeader ". $self->{TimeGate} ."/" . $self->{URI};
-
-    }
-
+  # print "Memento: ".$self->{memento} ;
+   $command = "curl $self->{AllParams} ". $commandTail;
    if($self->{Debug} == 1){
-        print "\nDEBUG: " . $command ."\n";
-    }
-    my $result = `$command`;
+        print "=============================================================\n";
+        print "DEBUG: Final command, " . $command ."\n";
+   }
+   $result = `$command`;
 
     #based on the type (text/html) and stict/relaxed mode we will force the retrieve embedded via memento method
     if( $self->{FollowEmbedded} == 1 && $self->{Mode}==1){
@@ -369,7 +510,7 @@ sub process_uri {
 }
 
 sub handle_redirection {
-my ($self) = @_;
+     my ($self) = @_;
 
 #Redirection policy case 1, URI-R has 302
     if($self->{Debug} == 1){
@@ -388,12 +529,15 @@ my ($self) = @_;
            my $command ;
            if ( defined( $self->{Info}->{TimeGate} ) ){
 
-                $command = "curl -I -L $acceptDateTimeHeader ". $self->{Info}->{TimeGate} ;
+                $command = "curl $self->{HeadParams} -I -L $acceptDateTimeHeader '" . $self->{Info}->{TimeGate} . "'";
             } else {
-                $command = "curl -I -L $acceptDateTimeHeader ". $self->{TimeGate} ."/" . $self->{URI};
+                $command = "curl $self->{HeadParams} -I -L $acceptDateTimeHeader '" . $self->{TimeGate} . "/" . $self->{URIQ} . "'";
 
             }
             
+            if($self->{Debug} == 1){
+                print "\nDEBUG: " . $command ."\n";
+            }
             my $results = `$command`;
 
             #if the status 404 move to the redirected location
@@ -445,7 +589,7 @@ my ($self) = @_;
                 if($self->{Debug} == 1){
                     print "DEBUG: Memento redirection status equals ($redirectionStatus), use the redirected URI: $self->{Headers}->{Location} \n";
                 }
-                $self->{URI}= $self->{Headers}->{Location} ;
+                $self->{URIQ}= $self->{Headers}->{Location} ;
                 $self->head();
                 return;
                 
@@ -466,11 +610,6 @@ sub retrieve_embedded {
         open $dumpFile, ">", $self->{ReplaceFile};
     }
 
- 
-    #open (MYFILE, '>oldpage.html');
-   # print MYFILE $pageText;
-   # close MYFILE;
-
     my $memParser = new MementoParser();
     $memParser->parse($pageText);
 
@@ -479,9 +618,6 @@ sub retrieve_embedded {
     if($self->{Debug} == 1){
         print "DEBUG: Number of embedded resources retrieved: " . $#oldURIs."\n";
     }
-   # for(my $i=0 ; $i<= $#oldURIs ; $i++){
-  #      print "$i :" .$oldURIs[$i]."\n";
-  #  }
 
     my %hash   = map { $_, 'aa'} @oldURIs;
     # or a hash slice: @hash{ @array } = ();3.	# or a foreach: $hash{$_} = 1 foreach ( @array );4.5.	
@@ -490,25 +626,17 @@ sub retrieve_embedded {
     foreach my $oldURI (keys %hash)
     { 
         my $completeOldURI = $oldURI;
-  
+
+        #There is a missing testcase here if the URI ends with .html for example
         if(index($oldURI, "http") != 0){
-
-     #   print "Length of uri:>".substr($self->{URI},0)."< ".length($self->{URI})."\n";
-
-            if(index($self->{URI},'\r')>0 or  index($self->{URI},'\n')>0 )
-            {
-#print "============here============";
-             $completeOldURI = substr($self->{URI},0, -2 ). "/".$oldURI;    
-            } else {
-            
-                $completeOldURI = $self->{URI}."/" . $oldURI;
-               }
+           my $urlObj = URI->new($self->{memento});
+           $completeOldURI = URI->new_abs($oldURI, $urlObj );  ;
+           #$completeOldURI = $baseURI. $oldURI;
         }
 
         if($self->{Debug} == 1){
             print $completeOldURI."\n";
         }
-
         my $embeddedThread = new MementoThread();
    
         $embeddedThread->setURI($completeOldURI);
@@ -517,26 +645,33 @@ sub retrieve_embedded {
         $embeddedThread->setDebug($self->{Debug});
         $embeddedThread->setOverride($self->{Override});
         $embeddedThread->setTimeGate($self->{TimeGate});
-        $embeddedThread->head();
+     #   $embeddedThread->findMemento();
+        @param = ();
+       # $embeddedThread->setParams($self->{HeadParams} );
   
-        @param = (" -L "," -I ");
+       $embeddedThread->{HeadParams}=$self->{HeadParams};
+        $embeddedThread->{AllParams}=$self->{AllParams};
 
-        $embeddedResult = $embeddedThread->process_uri(@param);
+        $embeddedResult = $embeddedThread->process_uri();
         
-        if( $embeddedResult =~ m/Location:.*\n/ ){
+        if( defined($embeddedThread->{memento} )){
 
-            my $newURI = substr($&,10);
+            my $newURI = $embeddedThread->{memento};
             $pageText =~ s/$oldURI/$newURI/g;
 
             if($self->{Debug} == 1){
                 print "DEBUG: Replace $oldURI \n\t      With $newURI\n";
-             }
-             if( defined($dumpFile) ){
-                print $dumpFile $oldURI .",".$newURI."\n";
-               
-                
             }
-        }   
+            if( defined($dumpFile) ){
+                print $dumpFile $oldURI .",".$newURI."\n";
+            }
+        }  else {
+            if($self->{Debug} == 1){
+                print "DEBUG: Replace was not available\n";
+                print "DEBUG: $embeddedResult \n";
+            }
+
+        }
         
         
           #  my ($type, $length, $mod)  = head($oldURI);
@@ -555,8 +690,8 @@ sub retrieve_embedded {
 
     }
     if( defined($dumpFile) ){
-                close $dumpFile;
-            }
+      close $dumpFile;
+    }
 
     return $pageText;
 }
@@ -578,6 +713,7 @@ sub unrewriteURI {
             if($nHttp > 1){
                     if($self->{Debug} == 1){
                         print "DEBUG: Successfully, URI is: ".substr $orgURI,$nHttp ."\n";
+                        print "\n";
                         }
                 return substr $orgURI,$nHttp ;
             }
@@ -607,11 +743,11 @@ sub process_timemap{
     } elsif(     defined( $self->{Info}->{TimeGate} ) 
         or  $self->{Info}->{Type} eq "TimeGate"){
         #This is part should be updated to check if the concatenation between the URI and TimeGate required or not
-        $command = "curl -I -L " .$self->{TimeGate};
+        $command = "curl $self->{AllParams} -I -L '" . $self->{TimeGate} . "'";
 
     } else {
 
-       $command ="curl -I -L ". $self->{TimeGate} ."/" . $self->{URI};
+       $command ="curl $self->{AllParams} -I -L '". $self->{TimeGate} . "/" . $self->{URIQ} . "'";
 
     }
 
@@ -650,14 +786,14 @@ sub process_timemap{
         if ( index( $timeMapURI, '/',length($timeMapURI) -3) < 0 ){
             $timeMapURI = $timeMapURI."/";
         }
-        $timeMapURI = $timeMapURI.$timemap. '/'.$self->{URI};
+        $timeMapURI = $timeMapURI.$timemap . '/' . $self->{URIQ};
 
         if($self->{Debug} == 1){
             print "DEBUG: Get the TimeMap by replacing the TimeGate \n";    
         }
 
     }
-    my  $command = "curl @params $timeMapURI";
+    my  $command = "curl $self->{AllParams} '$timeMapURI'";
     if($self->{Debug} == 1){
   
         print "DEBUG: ".$command;
