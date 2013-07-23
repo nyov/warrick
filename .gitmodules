@@ -1,0 +1,4 @@
+[submodule "mcurl"]
+	path = mcurl
+	url = https://github.com/nyov/mcurl.git
+	branch = warrick

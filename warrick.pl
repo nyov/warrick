@@ -1807,11 +1807,11 @@ sub recover_resource($){
 		if($opts{windows})
 		{
 			#$outfile = UrlUtil::WindowsConvertUrlPath($outfile);
-			$wgetCmd = "$DirOffset\\mcurl.pl -D \"$directory\\logfile.o\" $drHeaders -tg \"$timegate\" -L -o \"$outfile\" \"$urlToGet\"";
+			$wgetCmd = "$DirOffset\\mcurl\\mcurl.pl -D \"$directory\\logfile.o\" $drHeaders -tg \"$timegate\" -L -o \"$outfile\" \"$urlToGet\"";
 		}
 		else
 		{
-			$wgetCmd = "$DirOffset/mcurl.pl -D \"$directory/logfile.o\" $drHeaders -tg \"$timegate\" -L -o \"$outfile\" \"$urlToGet\"";
+			$wgetCmd = "$DirOffset/mcurl/mcurl.pl -D \"$directory/logfile.o\" $drHeaders -tg \"$timegate\" -L -o \"$outfile\" \"$urlToGet\"";
 		}
 	}
 	else
