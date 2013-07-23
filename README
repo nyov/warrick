@@ -16,7 +16,8 @@ Python
 and these Perl libraries: HTML::TagParser, LinkExtractor, Cookies,
 	Status, and Date, and the URI library
 
-Running ./INSTALL at the command line should install these dependencies.
+Running ./INSTALL.(debian|redhat).sh at the command line
+should install these dependencies.
 To test the installation, run ./TEST. This will recover a web
 page and compare it to a master copy.
 
