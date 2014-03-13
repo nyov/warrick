@@ -2,10 +2,7 @@
 
 echo "Starting test..."
 
-#perl warrick.pl -D MAKEFILE -o MAKEFILE_LOGFILE.log -xc -nr -dr 2007-08-02 -k -T -nv http://www.cs.odu.edu/
-
-##use this one eventually. Other being use for the time being to giev a more visual representation of the recovery
-perl warrick.pl -D MAKEFILE -o MAKEFILE_LOGFILE.log -xc -nr -dr 2007-08-02 -T -nv http://www.cs.odu.edu/
+perl warrick.pl -D MAKEFILE -o MAKEFILE_LOGFILE.log -xc -nr -dr 2007-08-02 -k -T -nv http://www.cs.odu.edu/
 
 echo "TESTING DOWNLOAD COMPLETE..."
 echo "-----------------------------"
