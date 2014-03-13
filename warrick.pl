@@ -133,8 +133,6 @@ unless (@ARGV) {
 	&terminate();
 }
 
-&printHeader();
-
 ##Debugging output prints a list of arguments for future debugging.
 &echo("Arguments: " . join (" ", @ARGV) . "\n\n");
 my $paramList = join (" ", @ARGV);
@@ -251,16 +249,7 @@ if ($^O eq "MSWin32") {
 
 my @Url_frontier = ();
 
-my $TimeGateFile = "";
-
-if($opts{windows})
-{
-	$TimeGateFile = "\\timegates.o";
-}
-else
-{
-	$TimeGateFile = "/timegates.o";
-}
+my $TimeGateFile = "timegates.o";
 
 my $SUBDIR = 0;
 if(defined $opts{subdir})
@@ -300,214 +289,66 @@ if($opts{archive})
 {
 	&echo("Archive option $opts{archive} chosen...");
 
-	if($opts{archive} =~ /^ia{1,1}/i)
-	{
+	if($opts{archive} =~ /^ia{1,1}/i) {
 		&echo("Internet archive proxies will be used.\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\ia_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/ia_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^wc{1,1}/i)
-	{
+		$TimeGateFile = "ia_timegates.o";
+	} elsif($opts{archive} =~ /^wc{1,1}/i) {
 		&echo("Web Citation proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\wc_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/wc_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^ai{1,1}/i)
-	{
+		$TimeGateFile = "wc_timegates.o";
+	} elsif($opts{archive} =~ /^ai{1,1}/i) {
 		&echo("Archive-It proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\ai_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/ai_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^loc{1,1}/i)
-	{
+		$TimeGateFile = "ai_timegates.o";
+	} elsif($opts{archive} =~ /^loc{1,1}/i) {
 		&echo("Library of Congress proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\loc_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/loc_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^uk{1,1}/i)
-	{
+		$TimeGateFile = "loc_timegates.o";
+	} elsif($opts{archive} =~ /^uk{1,1}/i) {
 		&echo("National Archives UK proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\uk_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/uk_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^eu{1,1}/i)
-	{
+		$TimeGateFile = "uk_timegates.o";
+	} elsif($opts{archive} =~ /^eu{1,1}/i) {
 		&echo("ArchiefWeb proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\eu_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/eu_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^bl{1,1}/i)
-	{
+		$TimeGateFile = "eu_timegates.o";
+	} elsif($opts{archive} =~ /^bl{1,1}/i) {
 		&echo("British Library proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\bl_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/bl_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^b{1,1}/i)
-	{
+		$TimeGateFile = "bl_timegates.o";
+	} elsif($opts{archive} =~ /^b{1,1}/i) {
 		&echo("Bing proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\b_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/b_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^y{1,1}/i)
-	{
+		$TimeGateFile = "b_timegates.o";
+	} elsif($opts{archive} =~ /^y{1,1}/i) {
 		&echo("Yahoo! proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\y_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/y_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^g{1,1}/i)
-	{
+		$TimeGateFile = "y_timegates.o";
+	} elsif($opts{archive} =~ /^g{1,1}/i) {
 		&echo("Google proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\g_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/g_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^aweu{1,1}/i)
-	{
+		$TimeGateFile = "g_timegates.o";
+	} elsif($opts{archive} =~ /^aweu{1,1}/i) {
 		&echo("Archiefweb proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\aweu_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/aweu_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^nara{1,1}/i)
-	{
+		$TimeGateFile = "aweu_timegates.o";
+	} elsif($opts{archive} =~ /^nara{1,1}/i) {
 		&echo("Archiefweb proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\nara_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/nara_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^cdlib{1,1}/i)
-	{
+		$TimeGateFile = "nara_timegates.o";
+	} elsif($opts{archive} =~ /^cdlib{1,1}/i) {
 		&echo("CDLib proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\cdlib_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/cdlib_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^diigo{1,1}/i)
-	{
+		$TimeGateFile = "cdlib_timegates.o";
+	} elsif($opts{archive} =~ /^diigo{1,1}/i) {
 		&echo("Diigo proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\di_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/di_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^can{1,1}/i)
-	{
+		$TimeGateFile = "di_timegates.o";
+	} elsif($opts{archive} =~ /^can{1,1}/i) {
 		&echo("Canadian proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\can_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/can_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^wikia{1,1}/i)
-	{
+		$TimeGateFile = "can_timegates.o";
+	} elsif($opts{archive} =~ /^wikia{1,1}/i) {
 		&echo("Wikia proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\wikia_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/wikia_timegates.o";
-		}
-	}
-	elsif($opts{archive} =~ /^wiki{1,1}/i)
-	{
+		$TimeGateFile = "wikia_timegates.o";
+	} elsif($opts{archive} =~ /^wiki{1,1}/i) {
 		&echo("Wikipedia proxies will be used\n\n");
-		if($opts{windows})
-		{
-			$TimeGateFile = "\\wiki_timegates.o";
-		}
-		else
-		{
-			$TimeGateFile = "/wiki_timegates.o";
-		}
-	}
-	else
-	{
+		$TimeGateFile = "wiki_timegates.o";
+	} else {
 		&echo("\nArchive not recognized. Using aggregate of proxies.\n\n");
 	}
+}
+
+if($opts{windows}) {
+	$TimeGateFile = "\\".$TimeGateFile;
+} else {
+	$TimeGateFile = "/".$TimeGateFile;
 }
 
 # Array to list all of the known Memento Timegates. This will come from the included
@@ -2484,7 +2325,6 @@ sub print_help {
 
 Warrick $Version - Web Site Reconstructor by Justin F. Brunelle (Old Dominion University)
       Prior version by Frank McCown
-http://warrick.cs.odu.edu/
 
 Usage: warrick [OPTION]... [URL]
 
@@ -2533,7 +2373,7 @@ OPTIONS:
 
    -R  | --resume=F		Resume a previously started and suspended recovery
 					job from file F
-   -B  				Keep the branding or headers from the archives from
+   -B				Keep the branding or headers from the archives from
 					which the memento was recovered.
    -nB				Remove the branding from the archives (this is the
 					default)
@@ -2579,7 +2419,15 @@ EXAMPLES
       ./warrick.pl -R 1234_myserver.save
 
 HELP
+
+	print "\n\n#########################################################################\n";
+	print "# Welcome to the Warrick Program!\n";
+	print "# Warrick is a website recovery tool out of Old Dominion University\n";
+	print "# Please provide feedback to Justin F. Brunelle at jbrunelle\@cs.odu.edu\n";
+	print "#########################################################################\n\n\n\n";
+
 }
+
 #-a | --archive=[ia|wc|ai|loc|uk|eu|bl|b|g|y|aweu|nara|cdlib|diigo|can|wikia|wiki]
 
 #################################################################################
@@ -2911,19 +2759,14 @@ sub writeCache()
 
 sub print_version()
 {
-	#######################
-	#This function simply prints the current version
-	#######################
-
-	print "\n\nWarrick Version 2.3:A - By Justin F. Brunelle\n";
+	print "Warrick Version $Version\n";
 	print "This version of Warrick has been adapted from Dr. Frank McCown's original version 1.0.";
-	print "Last Update: 11/27/2011\n";
-
-	print "\n\n This version of Warrick uses Memento to recover resources, as well as lister queries. \n\n";
-
-	print "This version also make use of the mcurl tool, along with Memento. Also, this version is an Alpha release. Bugs will exist, some of them already known.";
-	print " Please excuse our mess for the";
-	print " time being. Feedback is appreciated. Please contact Justin F. Brunelle at jbrunelle\@cs.odu.edu to provide feedback to help us improve the Warrick project.\n\n";
+	print "\n";
+	print "This version of Warrick uses Memento to recover resources, as well as lister queries.\n";
+	print "\n";
+	print "This version also make use of the mcurl tool, along with Memento. Also, this version is an Alpha release. Bugs will exist, some of them already known.\n";
+	print "Feedback is appreciated. Please contact Justin F. Brunelle at jbrunelle\@cs.odu.edu to provide feedback to help us improve the Warrick project.\n";
+	print "\n";
 
 	exit();
 }
@@ -2985,14 +2828,14 @@ sub terminate()
 	#This function terminates the program and writes the current savestate data to a save file
 	#######################
 
-	&echo("Program terminated.\n\n-----------------------\n\n\n");
-
 	##if the outfile is opened, close it
 	if($FD)
 	{
 		close(TOLOG);
 	}
 	&saveState();
+
+	&echo("Program terminated.\n\n-----------------------\n");
 	exit();
 }
 
@@ -3528,17 +3371,6 @@ sub IAlister()
 	}
 	#&terminate();
 }
-
-
-sub printHeader()
-{
-	print "\n\n#########################################################################\n";
-	print "# Welcome to the Warrick Program!\n";
-	print "# Warrick is a website recovery tool out of Old Dominion University\n";
-	print "# Please provide feedback to Justin F. Brunelle at jbrunelle\@cs.odu.edu\n";
-	print "#########################################################################\n\n\n\n";
-}
-
 
 sub writeToRecoLog($)
 {
