@@ -27,24 +27,24 @@ sub new {
     my $self = {
 		# Specify if wanting debug output
 		_debug				=> $param{-debug},
-		
+
 		# Maximum number of queries that can be used in 24 hours
         _queryLimit 	=> $param{-queryLimit},
-		
+
 		# Number of queries used in 24 hours
         _queriesUsed 	=> 0,
-		
+
 		# set to 0 if there are no more urls available in a web repo that we
 		# could not recover
 		_moreUrlsAvailable	=> 1,
-		
+
 		# set to 0 if there are no more image urls available in a web repo that we
 		# could not recover
 		_moreImageUrlsAvailable	=> 1,
-		
+
 		# Name of web repository
         _repoName		=> $param{-repoName},
-		
+
 		# Key used to access API
 		_key				=> $param{-key},
     };
@@ -114,24 +114,24 @@ sub key {
 #############################################################################
 
 sub makeHttpRequest {
-		
+
 	my $url = shift;                            # URL to request
 	my $referer = shift || WARRICK_WEBPAGE;     # Optional HTTP_REFERER
 	my $num_retries = shift || 5;	# Num of times we should try to get this URL in the face of errors
 	my $proxy;   # Set to 1 if wanting to use a proxy
-	
-	
+
+
 	if (!defined $url || $url eq "") {
 		warn "URL is not defined in call to makeHttpRequest";
 		return;
 	}
-	
+
 	my $agent = LWP::UserAgent->new;
 	$agent->agent(USER_AGENT);
-	
+
 	# Get proxy info from http_proxy env variable
-	$agent->env_proxy if (defined $proxy && $proxy);  
-		
+	$agent->env_proxy if (defined $proxy && $proxy);
+
 	#my @ns_headers = ('User-Agent' => $User_agent);
 	#my $resp = $UA->get($url, @ns_headers);
 
@@ -145,37 +145,37 @@ sub makeHttpRequest {
 	$request->header('Connection'      => 'close'     );
 	$request->header('Accept'          => '*/*'       );
 	$request->header('Host'            => $host       );
-	
-		
+
+
 	# Default timeout is 180
-	
+
 	my $successful_request = 0;
 	my $num_requests = 0;
 	my $response;
 	my $sleep_time = 5;  # Num of minutes to sleep after getting 500 error
-	
+
 	# Keep making requests until we are successful or give up
 	while (!$successful_request && $num_requests < $num_retries) {
-		
+
 		# Make http request and charge it to the repo
 		$response = $agent->request($request);
-			
+
 		$num_requests++;
-	
+
 		# Simulate an error
 		#$response->code(500);
-		
+
 		if ($url =~ m|^http://web\.archive\.org| && $response->code eq '200' &&
-			$response->content =~ 
+			$response->content =~
 			   m|Wayback Machine service is experiencing technical difficulties|i) {
 			$response->code(500);  # Force into wait loop
 			print "\nIA is experiencing technical difficulties.\n";
 		}
-		
+
 		if ($response->is_error) {
-			print "Request generated an error (" . $response->code . 
+			print "Request generated an error (" . $response->code .
 				") for [$url] on try $num_requests of $num_retries.\n";
-			
+
 			# 410 Gone response may be returned by Yahoo when they do
  			# not trust the cached URL.  See
 			# http://blog.commtouch.com/cafe/data-and-research/spammers-cloak-site-links-in-yahoo-search-results-urls/
@@ -200,28 +200,28 @@ sub makeHttpRequest {
 				# 404 responses that are NOT lister queries should not be tried again
 				if ($response->code eq '404' && $url !~ m|sr_\d+nr_|) {
 					print_debug("IA does not appear to have this URL stored.");
-					return $response;  
+					return $response;
 				}
 				elsif ($response->code eq '403') {
 					print "\nSorry, the resource cannot be recovered because of the ".
 						"robots.txt file on the website.\n\n";
-					return $response;  
+					return $response;
 				}
 			}
-			
+
 			# We should retry when receiving this type of error
 			if ($num_requests < $num_retries) {
 				print "Sleeping for $sleep_time minutes before trying again...\n";
 				sleep(60 * $sleep_time);
 			}
-			
+
 			$sleep_time += 5 if ($response->code == 500 || $response->code == 503);
 		}
 		else {
 			$successful_request = 1;
 		}
 	}
-		
+
 	return $response;
 }
 
@@ -230,7 +230,7 @@ sub makeHttpRequest {
 sub print_debug {
 
 	my $msg = shift;
-	
+
 	if ($Debug) {
 		print "!! $msg\n";
 	}

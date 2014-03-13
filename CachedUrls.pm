@@ -36,9 +36,9 @@ sub urlCache {
 
 sub setDate {
 	my $cacheDate = shift;
-	
+
 	return if !defined $cacheDate;
-	
+
 	# See if number is in format YYYY-MM-DD
 	if ($cacheDate !~ /^\d\d\d\d-\d\d-\d\d$/) {
 		print STDERR "ERROR in CachedUrls.pm : Stored date [$cacheDate] is not in YYYY-MM-DD format.\n";
@@ -48,7 +48,7 @@ sub setDate {
 		# Remove dashes if present
 		$cacheDate =~ s/-//g;
 		return $cacheDate;
-	}	 
+	}
 }
 
 sub cacheDate {
@@ -59,7 +59,7 @@ sub cacheDate {
 
 sub storedDateFormatted {
     my ( $self ) = @_;
-    
+
     # convert to yyyy-mm-dd
 	my $date = $self->{_cacheDate};
 	if (!defined $date) {

@@ -16,14 +16,14 @@ sub new {
         _siteUrl		=> $param{-siteUrl}
     };
     bless $self, $class;
-    
+
     # Get rid of odd chars in siteUrl
-    
+
     # Create a file to log to
-    my $fn = $self->getFileNameFromUrl($self->siteUrl);  
-    
+    my $fn = $self->getFileNameFromUrl($self->siteUrl);
+
     $self->{_fileName} = $fn;
-        
+
     return $self;
 }
 
@@ -39,26 +39,26 @@ sub fileName {
 
 sub create {
 
-	# Create a new log file	
-	
+	# Create a new log file
+
 	my ($self) = @_;
 	my $fn = $self->{_fileName};
 	open(LOG, ">$fn") || print "Error creating log file [$fn]: $!\n";
-	
+
 	# Force output to flush
 	my $ofh = select LOG;
 	$| = 1;
 	select $ofh;
-	
+
 	print LOG "timestamp\torig url\tmime type\tfilename\trepo\tstored date\tothers\n";
 }
 
 ##############################################################################
 
 sub append {
-	
+
 	# Append to existing log file
-	
+
 	my ($self) = @_;
 	my $fn = $self->{_fileName};
 	open(LOG, ">>$fn") || print "Error appending to log file [$fn]: $!\n";
@@ -74,7 +74,7 @@ sub getFileNameFromUrl {
     $fn =~ s/\.+/\./g;       # Get rid of multiple periods in a row
     $fn =~ s/\.$//g;         # Get rid of last period
     $fn .= $file_ext;
-    
+
     return $fn;
 }
 
@@ -87,7 +87,7 @@ sub siteUrl {
 }
 
 sub close {
-	close LOG;	
+	close LOG;
 }
 ##############################################################################
 
@@ -99,12 +99,12 @@ sub log {
 	my $repo = shift;
 	my $store_date = shift;
 	my $other_results = shift;
-	
+
 	$saved_fn = "" if !defined $saved_fn;
 	$repo = "" if !defined $repo;
 	$store_date = "" if !defined $store_date;
 	$other_results = "" if !defined $other_results;
-	
+
 	print LOG currentTime() . "\t$orig_url\t$mime_type\t$saved_fn\t" .
 		"$repo\t$store_date\t$other_results\n";
 }
@@ -120,7 +120,7 @@ sub print {
 ##############################################################################
 
 sub currentTime {
-	
+
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 	$year += 1900;
 	$mon += 1;

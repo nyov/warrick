@@ -271,7 +271,7 @@ sub Fetch
     ##
     ## The following is more verbose than need be, but the more succinct
     ## code is convoluted for little gain.
-    ## 
+    ##
     my $ResultHash;
     if ($Yahoo::Search::UseXmlSimple)
     {

@@ -42,10 +42,10 @@ sub urlStored {
 sub storedDate {
 	my ( $self, $storedDate ) = @_;
 	if (defined $storedDate) {
-		
+
 		# Remove dashes if present
 		$storedDate =~ s/-//g;
-		
+
 		# See if number is in format YYYYMMDD
 		if ($storedDate !~ /^\d\d\d\d\d\d\d\d$/) {
 			print STDERR "ERROR in StoredItem.pm : Stored date [$storedDate] is not in YYYYMMDD format.\n";
@@ -53,7 +53,7 @@ sub storedDate {
 		}
 		else {
 		    $self->{_storedDate} = $storedDate;
-		}	    
+		}
 	}
 	else {
 	    return $self->{_storedDate};
@@ -62,7 +62,7 @@ sub storedDate {
 
 sub storedDateFormatted {
     my ( $self ) = @_;
-    
+
     # convert to yyyy-mm-dd
 	my $date = $self->{_storedDate};
 	if (!defined $date) {
@@ -127,7 +127,7 @@ sub canonicalForm {
 sub print {
     my ($self) = @_;
 
-    printf("url : %s\nMIME type : %s\nURL : %s\nStored date : %s\n", 
+    printf("url : %s\nMIME type : %s\nURL : %s\nStored date : %s\n",
     	$self->url, $self->mimeType, $self->urlOrig, $self->storedDate);
 }
 

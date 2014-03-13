@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
-# 
-# warrick.pl 
+#
+# warrick.pl
 #
 # Developed by Frank McCown at Old Dominion University - 2005
 # Contact: fmccown@cs.odu.edu
@@ -8,7 +8,7 @@
 # Copyright (C) 2005-2010 by Frank McCown
 #
 my $Version = '2.0.0';
-# 
+#
 # This program's grandmother was Webrepeaper by Brain D. Foy
 # http://search.cpan.org/dist/webreaper/
 #
@@ -102,7 +102,7 @@ push(@TimeGates, "http://blanche-03.cs.odu.edu/aggr/timegate/");
 #push(@TimeGates, "http://mementoproxy.lanl.gov/aggr/timegate/");
 
 my @Mementos;
-	
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub terminate()
@@ -118,7 +118,7 @@ sub terminate()
 my $Url_start;
 
 # Port number used by $Url_start
-my $Url_start_port; 
+my $Url_start_port;
 
 # Print help if no args
 unless (@ARGV) {
@@ -134,7 +134,7 @@ if ($url !~ /^-.+/ && $url =~ m|^https?://|) {
 
 	# Make sure url starts with http(s)://
 	#$url = "http://$url" if ($url !~ m|^https?://|);
-	
+
 	# Make sure there is at least one period in the domain name.  \w and - are ok.
 	if ($url !~ m|https?://[\w-]+\.\w+|) {
 		print STDERR "The domain name may only contain US-ASCII alphanumeric " .
@@ -147,7 +147,7 @@ if ($url !~ /^-.+/ && $url =~ m|^https?://|) {
 	my $url_o = new URI::URL $Url_start;
 	my $Domain = lc $url_o->host;
 
-	
+
 	$Url_start_port = UrlUtil::GetPortNumber($Url_start);
 
 	print "We will be using $Url_start \n";
@@ -182,110 +182,110 @@ sub createDir
 my %opts;
 Getopt::Long::Configure("no_ignore_case");
 GetOptions(
-			"b"		=>	\$opts{limit_page_and_links},		
+			"b"		=>	\$opts{limit_page_and_links},
 			#"c"		=>	\$opts{convert_urls},
-			
+
 			# use pre-query URLs as seeds
 			"c|complete-recovery"	=>	\$opts{complete_recovery},
-			
+
 			# Turn on debug output
 			"d|debug"	=>	\$opts{debug},
-			
+
 			# Save reconstructed files in this directory
 			"D|target-directory=s"	=>	\$opts{download_dir},
-			
+
 			# Set the range of dates to recover from IA
 			"dr|date-range=s" => \$opts{date_range},
-			
+
 			# Terminate once all queries have been issued (don't sleep 24 hrs)
 			"e|expire"	=>	\$opts{expire},
-			
+
 			"h|help"	=>	\$opts{help},
 			"E|html-extension" => \$opts{save_dynamic_with_html_ext},
 
 			# NOT IMPLEMENTED
 			"ignore_ext=s"	=>	\$opts{ignore_file_exts},
-			
+
 			# make entire url (except query string) lowercase.  Useful for
 			# web servers running on Windows
 			"ic|ignore-case"	=> \$opts{ignore_case_urls},
-			
+
 			# Number of queries to assume we have already used.
 			# This is useful when reconstructing multiple sites in the same
 			# day so we stop before exhausting all our queries.
 			"I|initial-used-queries=s"  	=> \$opts{initial_used_queries},
-			
+
 			# Read URLs from an input file
 			"i|input-file=s"	=>	\$opts{input_file},
 
 			"hosts=s"	=>	\$opts{allowed_hosts},
 			"X|exclude-directories=s"	=>	\$opts{exclude_dirs},
-			
+
 			# Convert all URLs from absolute to relative (uses same names as wget)
 			"k|convert-links" =>	\$opts{convert_urls_to_relative},
-			
+
 			# Don't use
 			"l|limit-dir"	=>	\$opts{limit_dir},
-			
+
 			# Choose the most recent file instead of choosing canonical version
 			# of non-html resource
 			"m|most-recent"	=>	\$opts{most_recent},
-			
+
 			#"n=i"	=>	\$opts{max_downloads},
 			"n|number-download=i"	=>	\$opts{max_downloads_and_store},
 			#"np|no-parent" => \$opts{limit_dir},  Warrick never goes to parent
 			"nv|no-verbose" => \$opts{no_verbose_output},
-			
+
 			# Don't ask web repos initially for all URLs they have stored
 			"nl|no-lister-queries" => \$opts{no_lister_queries},
-			
-			# Don't overwrite files already downloaded.  
+
+			# Don't overwrite files already downloaded.
 			"nc|no-clobber" => \$opts{no_clobber},
-			
+
 			# Log all output to this file
 			"o|output-file=s"	=>	\$opts{output_file},
-			
+
 			# Set the query limit for each web repo.  Best to use defaults.
 			"ql|query-limits=s"	=> \$opts{query_limits},
-			
+
 			# Look for additional resources to recover
 			"r|recursive" =>  \$opts{recursive_download},
-			
+
 			"ri"	=>	\$opts{remove_index_files},
-						
-			# Specify the name of the reconstruction summary file, otherwise default 
+
+			# Specify the name of the reconstruction summary file, otherwise default
 			# filename is used
 			"s|summary-file=s"	=>	\$opts{summary_file},
 
 			# For testing purposes
 			"testmode" =>	\$opts{test_mode},
-			
+
 			# Set path for file that Warrick should look for a terminate early file
 			"t|terminate-file=s"   => \$opts{terminate_early_file},
-			
+
 			# Set the user agent
 			"U|user-agent=s"	=>	\$opts{user_agent},
-			
+
 			# Show the current version being used
 			"V|version"	=> \$opts{version},
-			
+
 			# Convert an existing recon into browsable (relative) links
 			"v|view-local"	=> \$opts{view_local},
-			
+
 			# Use Windows naming conventions (to replace illegal chars)
 			# This can be determined automatically by Perl by examining
 			# which OS Warrick is running on.
-			"wn|windows" =>	\$opts{windows},  
-			
+			"wn|windows" =>	\$opts{windows},
+
 			# Set the wait in seconds.  Best to use the default.
 			"w|wait=i"	=>	\$opts{wait},
-			
+
 			# List of web repos to use (default is all)
 			"wr|web-repo=s"		=>	\$opts{web_repo},
-			
+
 			# Use HTTP proxy
 			"Y|proxy"		=>	\$opts{proxy},
-			
+
 		) || exit($!);
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -314,16 +314,16 @@ if ($^O eq "MSWin32") {
 	$opts{windows} = 1;
 }
 
-if (defined $opts{max_downloads_and_store} && 
+if (defined $opts{max_downloads_and_store} &&
 	!defined $opts{recursive_download}) {
 	print "The -n/number-download option may only be used with the -r/recursive option.\n";
-	terminate();			
+	terminate();
 }
 
-if (defined $opts{max_downloads_and_store} && 
+if (defined $opts{max_downloads_and_store} &&
 	$opts{max_downloads_and_store} < 1) {
 	print "The -n/number-download argument must be a positive integer.\n";
-	terminate();		
+	terminate();
 }
 
 if (!defined $opts{proxy}) {
@@ -338,7 +338,7 @@ my $Host = hostname();
 print "Warrick version $Version by Frank McCown, adapted by Justin F. Brunelle\n";
 
 print "PID = $pid\nMachine name = $Host\n\n";
-	
+
 if ($Verbose) {
 	print "Options are:\n";
 	while ((my $option, my $value) = each(%opts)) {
@@ -350,7 +350,7 @@ if ($Verbose) {
 if (defined $opts{download_dir}) {
 	my $directory = $opts{download_dir};
 	chdir $directory or die "Could not change directory to $directory: $!\n";
-	print "Download to directory: " . cwd . "\n\n" if $Verbose; 
+	print "Download to directory: " . cwd . "\n\n" if $Verbose;
 }
 
 
@@ -366,7 +366,7 @@ print "warricking $Url_start\n\n";
 my $Domain;
 my $Path = "/";
 
-my $url_o = new URI::URL $Url_start;     
+my $url_o = new URI::URL $Url_start;
 $Domain = lc $url_o->host;
 $Path =  $url_o->path;
 
@@ -397,7 +397,7 @@ for($i = 0; $i < $#Url_frontier; $i++)
 	get_memento($Url_frontier[$i]);
 
 	my $tm = $Mementos[0];
-	
+
 
 	##recover and store as the file name. cs.odu.edu/page1.html should be stored as page1.html
 	my $nextFile = recover_resource($tm, $Url_frontier[$i]);
@@ -405,7 +405,7 @@ for($i = 0; $i < $#Url_frontier; $i++)
 	###shouldn't be necessary since recover_resource
 	#my $outfile = $Url_frontier[$i];
         #$outfile =~ s/[^a-zA-Z0-9]*//g;
-	
+
 	@Url_frontier = extract_links($nextFile);
 }
 
@@ -426,12 +426,12 @@ sub begin_recovery()
 	print "Debug-- Mementos: " . join ("\n", @Mementos);
 
 	##for now, just get the last memento
-	#unless($timemap =~ m/rel=\"original\"/ || $timemap =~ m/rel=\"timebundle\"/) 
+	#unless($timemap =~ m/rel=\"original\"/ || $timemap =~ m/rel=\"timebundle\"/)
 	#{
 	#	my $tm = substr($timemap, 2, index($timemap, '>')-2);
 	#
 	#	print "$timemap tells me I should get $tm\n";
-	#			
+	#
 		recover_resource($tm, $Path);
 	#}
 }
@@ -490,7 +490,7 @@ sub get_memento($)
 	}
 
 	###find the location and link
-	
+
 	foreach my $m (@TimeGateResponse)
 	{
 		my $frag = substr($m, 0, 10);
@@ -518,8 +518,8 @@ sub normalize_url
 	# Input: URL to be modified
         # Returns: Modified URL
         #
-        # Several modifications are made to a URL:  
-        # - Add '/' if missing at end of domain name     
+        # Several modifications are made to a URL:
+        # - Add '/' if missing at end of domain name
         #               Example: http://foo.org -> http://foo.org/
         # - Remove the fragment (section link) from a URL
         #       Example: http://foo.org/bar.html#section1 -> http://foo.org/bar.html
@@ -529,7 +529,7 @@ sub normalize_url
         #               Example: http://foo.org/../a/b/../bar.html -> http://foo.org/a/bar.html
         # - Convert the domain name to lower case
         #               Example: http://FOO.ORG/BAR.html -> http://foo.org/BAR.html
-        # - Remove 'www.' prefix (or add it) depending on what is used in the      
+        # - Remove 'www.' prefix (or add it) depending on what is used in the
         #       start URL.
         #               Example: http://www.foo.org/bar.html -> http://foo.org/bar.html
         # - Remove index.html at the end
@@ -552,7 +552,7 @@ sub normalize_url
                         $url =~ s|/index.html$|/|;  # Default behavior
 		}
         }
-    
+
         if ($url !~ m|^(https?://)|) {
                 $url = "";
         }
@@ -575,14 +575,14 @@ sub normalize_url
 sub url_normalize_www_prefix {
 
         my $url = shift;
-    
+
         # Make url use 'www.' prefix if $Domain uses it.  Remove the prefix
         # if $Domain doesn't use it.
 
         #print STDERR "testing [$url]\n";
         my ($domain) = $url =~ m|^https?://([^/]+?)(:\d+)?/|;
         return $url if (!defined $domain);
-    
+
         #if (defined $Domain && $Domain ne $domain) {
         #        # See if one of these has an added 'www.' prefix
         #        if ($Domain =~ /^www\./) {
@@ -615,7 +615,7 @@ sub recover_resource(){
 
 	my $urlToGet = $_[0];
 
-	if($urlToGet =~ m/webcitation/i) 
+	if($urlToGet =~ m/webcitation/i)
 	{
 		print "\n\n We got a webcitation page. Converting link...\n\n";
 		$urlToGet = "http://128.82.5.41:8080/cgi-bin/AM/getWCpage.py?url=$urlToGet";
@@ -624,7 +624,7 @@ sub recover_resource(){
 
 
 	#wget flags to use:
-	# -T seconds	
+	# -T seconds
 	# -k == --convert-links
 	# -p --page-requisites
 	# -nd --no-directories
@@ -636,7 +636,7 @@ sub recover_resource(){
 	my $targetPath= $targetUri->path;
 
 	print "\n\nGot a path from $targetUri: $targetPath\n\n";
-	
+
 	my $outfile = "./" . $targetPath;
 
 	##build directory path
@@ -655,8 +655,8 @@ sub recover_resource(){
 	my $opts = "-T 100 -p -O \"$outfile\"";
 	#my $opts = "-T 100 -k -p";
 
-	#print "got $_[0]"; 
-	
+	#print "got $_[0]";
+
 	print "\n\n wgetting $opts $urlToGet\n\n";
 
 	$goodies = `wget $opts "$urlToGet"`;
@@ -673,60 +673,60 @@ sub recover_resource(){
 
 sub extract_links() {
 	# Extract all http and https urls from this cached resource that we have
-	# not seen before.   
+	# not seen before.
 
 	my $outfile = $_[0];
         #$outfile =~ s/[^a-zA-Z0-9]*//g;
 
 	my @returnarray;
 
-	my $targetFile = "/home/jbrunelle/public_html/wsdl/warrick/warrick/" . $directory . "/" . $outfile;	
+	my $targetFile = "/home/jbrunelle/public_html/wsdl/warrick/warrick/" . $directory . "/" . $outfile;
 
 	open(DAT, $targetFile) or die $! . $targetFile;
 	#open(DAT, $targetFile);
 	my @raw_data=<DAT>;
-	my $contents = join("\n", @raw_data);	
+	my $contents = join("\n", @raw_data);
 	close(DAT);
 
 	print "Search HTML resource $targetFile for links to other missing resources...\n";
-	
+
 	#my @links = UrlUtil::ExtractLinks($targetFile);
 	my @links = UrlUtil::ExtractLinks($contents, $targetFile);
 	#my @links = UrlUtil::ExtractLinks($Url_start);
 	print "Found " . @links . " links:\n";
-		
+
 	my %new_urls;
-	
+
 	foreach my $url1 (@links) {
-		
+
 		# Get normalized URL - strip /../ and remove fragment, etc.
 		$url = normalize_url($url1);
-	
+
 		print "got $url1\n";
 
 		# See if this link should be recovered later
-		if ($url1 ne "" && is_acceptable_link($url1)) {				
+		if ($url1 ne "" && is_acceptable_link($url1)) {
 			$new_urls{$url1} = 1;
 
 			print "and it's acceptable\n";
 			push(@returnarray, $url1);
 		}
 	}
-	
+
 	#print_debug("\n\nNew urls:");
 	foreach my $url2 (keys(%new_urls)) {
 		#print_debug("  $url");
-		
+
 		# Add to Converted_docs the $referer for each ppt, doc, pdf url
 		#check_special_url($url, $Url_start);
 	}
-	
+
 	# Add new urls to the url queue
 	#push(@Url_frontier, keys %new_urls);
-	
+
 	my $num_new_urls = keys(%new_urls);
 	print "\nFound $num_new_urls URLs that I kept\n";
-			
+
 	#print "\nURL queue is now " . @Url_frontier . "\n\n" if $Verbose;
 
 	foreach my $url (keys(%new_urls))
@@ -740,54 +740,54 @@ sub extract_links() {
 ###########################################################################
 
 sub is_acceptable_link {
-	
+
 	# Return 1 if this link is acceptable to be recovered
 	# according to the command line options, or return 0 otherwise.
-	
+
 	my $link = $_[0];  # URL to check
 	#my $link = shift;  # URL to check
-	
+
 	# If set to 1 then we do not reject a URL because it has been seen before
-	#my $ignore_seen = shift;   
-	
+	#my $ignore_seen = shift;
+
 	########jbrunelle must make sure we haven't seen this before
 
 	#print_debug($link);
-		
+
 	if ($link !~ m|^(https?://)|) {
 		#print_debug("  Rejected url because it doesn't have http:// or https:// at beginning");
 		return 0;
-	}	
-	
+	}
+
 	$link = UrlUtil::ConvertUrlToLowerCase($link) if $opts{ignore_case_urls};
-	
+
 	my $url = URI::URL->new($link);
 	my $url2 = URI::URL->new($Url_start);
 	my $host = $url2->host;
 	my $recHost = $url->host;
-	
+
 	$host =~ s/www.//i;
 
 	# Don't use $url->path since it could make Warrick die when on a URL like
 	# http://www.whirlywiryweb.com/q%2Fshellexe.asp because the %2F converts to a /
 	my $path = $url->epath;
-	
+
 	my $port = $url->port;
-							
-	# Don't allow urls that we've seen 
+
+	# Don't allow urls that we've seen
 	#if (!$ignore_seen && url_has_been_seen($url)) {
 		#print_debug("  Rejected url because we've seen it " .
 		#			url_num_times_seen($url) . " time(s).");
 		#url_mark_seen($url);
 	#	return 0;
 	#}
-				
+
 	# Don't allow links from unallowed domains
 	if (!($host =~ m/$recHost/i) && !($recHost =~ m/$host/i)) {
 		print "  Rejected url because [$host] is not $recHost....or visa versa\n";
 		return 0;
 	}
-	
+
 	# Don't allow URLs unless they are using the same port as the starting URL
 	# https uses port 443, and it's ok
 	if (undef ($opts{input_file}) && $Url_start_port != $port && $port != 443) {
@@ -795,9 +795,9 @@ sub is_acceptable_link {
 		return 0;
 	}
 
-	#print_debug("  Accepted");		
+	#print_debug("  Accepted");
 	#url_mark_seen($url) if (!$ignore_seen);
-	
+
 	return 1;
 }
 
@@ -823,31 +823,31 @@ Logging:
   -nv, --no-verbose          turn off verboseness
 
 Download:
-  -c,  --complete           all resources discovered through lister queries 
+  -c,  --complete           all resources discovered through lister queries
                               are downloaded
-  -n,  --number-download=N  specify the number of items N to be downloaded 
+  -n,  --number-download=N  specify the number of items N to be downloaded
                               before quitting
   -nc, --no-clobber         skip downloads that would overwrite existing files
   -w,  --wait=SECONDS       wait 4 +-SECONDS (random) between retrievals
-  -ic, --ignore-case        ignore the case of URLs (useful for Windows 
+  -ic, --ignore-case        ignore the case of URLs (useful for Windows
                               web servers)
   -D,  --target-directory   directory to download the files to
   -Y,  --proxy              use a proxy server (uses env var HTTP_PROXY)
   -i,  --input-file=FILE    recover only the URLs from FILE
-  
+
 Recursive download:
   -r,  --recursive          specify recursive download
-  -l,  --level=NUMBER       maximum recursion depth (inf or 0 for infinite) 
+  -l,  --level=NUMBER       maximum recursion depth (inf or 0 for infinite)
                               (to be implemented)
   -k,  --convert-links      make links in downloaded HTML point to local files
-  -p,  --page-requisites    get all images, etc. needed to display HTML page 
+  -p,  --page-requisites    get all images, etc. needed to display HTML page
                               (to be implemented)
-  -v,  --view-local         add .html extension to HTMLized Word, PDF, Excel, 
-                              etc. files and make links in downloaded HTML 
+  -v,  --view-local         add .html extension to HTMLized Word, PDF, Excel,
+                              etc. files and make links in downloaded HTML
                               point to local files
 
 Recursive accept/reject:
-  -dr, --date-range=BEGIN:END      begin and end dates (yyyy-mm-dd) or single 
+  -dr, --date-range=BEGIN:END      begin and end dates (yyyy-mm-dd) or single
                                      year (yyyy) for resources in IA
 
 
@@ -856,7 +856,7 @@ EXAMPLES
    Reconstruct entire website with debug output turned on:
 
       warrick -r -d http://www.example.com/
-	  
+
    Reconstruct entire website with debug output turned on and save output
    to warrick_log.txt:
 
@@ -865,16 +865,16 @@ EXAMPLES
    Stops after storing 10 files:
 
       warrick -r -n 10 http://www.example.com/
-      
+
    Recover every resource found in every web repository for this website:
-   
+
       warrick -r -c http://www.example.com/
-	  
+
    Recover every resources from Internet Archive that was archived between
    Feb 1, 2004 and Aug 31, 2005 (inclusive):
-   
+
       warrick -r -c -wr ia -dr 2004-02-01:2005-08-31 http://www.example.com/
-      
+
 HELP
 }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
-# 
-# warrick.pl 
+#
+# warrick.pl
 #
 # Developed by Frank McCown at Old Dominion University - 2005
 # Contact: fmccown@cs.odu.edu
@@ -8,7 +8,7 @@
 # Copyright (C) 2005-2010 by Frank McCown
 #
 my $Version = '2.2.2';
-# 
+#
 # This program's grandmother was Webrepeaper by Brain D. Foy
 # http://search.cpan.org/dist/webreaper/
 #
@@ -72,7 +72,7 @@ use HTML::LinkExtractor;	#for link extraction
 
 $|++;                       # force auto flush of output buffer
 
-###Statistics are yet to be implemented, but will be necessary to 
+###Statistics are yet to be implemented, but will be necessary to
 ###quantify Warrick's new performance
 # Store all stats for the reconstruction
 my %Stats;
@@ -112,7 +112,7 @@ my $directory;
 my $ORIGURI = "";
 
 my @Mementos;
-	
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Variable, when set to 1, will remove the links to the IA (removeIAlinks function)
@@ -125,7 +125,7 @@ my $Url_start;
 my $frontierIndex = -1;
 
 # Port number used by $Url_start
-my $Url_start_port; 
+my $Url_start_port;
 
 # Print help if no args
 unless (@ARGV) {
@@ -151,51 +151,51 @@ Getopt::Long::Configure("no_ignore_case");
 GetOptions(
 			# Turn on debug output
 			"d|debug"	=>	\$opts{debug},
-			
+
 			# Save reconstructed files in this directory
 			"D|target-directory=s"	=>	\$opts{download_dir},
-			
+
 			# Set the range of dates to recover from IA
 			"dr|date-recover=s" => \$opts{date_range},
-			
+
 			"h|help"	=>	\$opts{help},
 			"E|html-extension" => \$opts{save_dynamic_with_html_ext},
 
 			# make entire url (except query string) lowercase.  Useful for
 			# web servers running on Windows
 			"ic|ignore-case"	=> \$opts{ignore_case_urls},
-			
+
 			# Read URLs from an input file
 			"i|input-file=s"	=>	\$opts{input_file},
 
 			# Convert all URLs from absolute to relative (uses same names as wget)
 			"k|convert-links" =>	\$opts{convert_urls_to_relative},
-			
+
 			# limit the directory level warrick recovers to
 			"l|limit-dir=i"	=>	\$opts{limit_dir},
-			
+
 			"n|number-download=i"	=>	\$opts{max_downloads_and_store},
-			
+
 			"nv|no-verbose" => \$opts{no_verbose_output},
-			
-			# Don't overwrite files already downloaded.  
+
+			# Don't overwrite files already downloaded.
 			"nc|no-clobber" => \$opts{no_clobber},
-			
+
 			# Don't use the cache.
 			"xc|no-cache" => \$opts{no_cache},
-			
+
 			# Log all output to this file
 			"o|output-file=s"	=>	\$opts{output_file},
-			
+
 			# Look for additional resources to recover
 			"nr|non-recursive" =>  \$opts{recursive_download},
 
 			# Only download  resources in this subdirectory
 			"sd" =>  \$opts{subdir},
-			
+
 			# Show the current version being used
 			"V|version"	=> \$opts{version},
-			
+
 			# Convert a non-html resources to have html extensions
 			"vl|view-local"	=> \$opts{view_local},
 
@@ -211,9 +211,9 @@ GetOptions(
 			#retain the branding from the archives
 			"B" => \$opts{keep_branding},
 
-			"nB" => \$opts{no_branding},			
+			"nB" => \$opts{no_branding},
 
-			"ex|exclude=s" => \$opts{exclude},			
+			"ex|exclude=s" => \$opts{exclude},
 
 			# Specify an archive
 			"a|archive=s"	=>	\$opts{archive},
@@ -525,9 +525,9 @@ for(my $index = 0; $index < $#TimeGates+1; $index++)
 ##handle resume state:
 if(defined $opts{resume_file})
 {
-	&echo("Recovering our state from file $opts{resume_file}\n\n");	
+	&echo("Recovering our state from file $opts{resume_file}\n\n");
 
-	&resumeState($opts{resume_file});	
+	&resumeState($opts{resume_file});
 }
 
 # Last argument should be starting url or request for version, help, etc.
@@ -547,7 +547,7 @@ if(!defined $opts{input_file} && !(defined $opts{resume_file}))
 	my $url = $ARGV[-1];
 
 	$url = "http://$url" if ($url !~ m|^http?://|);
-	
+
 	if ($url !~ /^-.+/ && $url =~ m|^https?://|) {
 		pop(@ARGV);
 
@@ -559,7 +559,7 @@ if(!defined $opts{input_file} && !(defined $opts{resume_file}))
 				"characters (A-Z, a-z, & 0-9) and hyphens (-).\n";
 			&terminate();
 		}
-	
+
 		$Url_start = normalize_url($url);
 
 		if($Url_start eq "")
@@ -571,7 +571,7 @@ if(!defined $opts{input_file} && !(defined $opts{resume_file}))
 		my $url_o = new URI::URL $Url_start;
 		my $Domain = lc $url_o->host;
 
-	
+
 		$Url_start_port = UrlUtil::GetPortNumber($Url_start);
 	}
 }
@@ -618,10 +618,10 @@ if (!defined $Url_start && !defined $opts{input_file} && !(defined $opts{resume_
 }
 
 
-if (defined $opts{max_downloads_and_store} && 
+if (defined $opts{max_downloads_and_store} &&
 	$opts{max_downloads_and_store} < 1) {
 	print "The -n/number-download argument must be a positive integer.\n";
-	&terminate();		
+	&terminate();
 }
 
 ##NOTE: Currently does not explicitely handle going through a proxy. This feature
@@ -648,7 +648,7 @@ my $useArchiveUrls = 1;		# allows us to recover from the IA
 my $useCache = 1;		# default operation is to read timemaps from the cache when possible
 #my $CACHE_LIMIT = 300;		# configurable size of the cache
 my $CACHE_LIMIT = 300000;	# configurable size of the cache
-my @CACHE;			# variable to hold the locations of cached timemaps 
+my @CACHE;			# variable to hold the locations of cached timemaps
 				# (timemaps are stored in files under the included "cache" directory)
 my $numDls = 0;			# counter for the number of downloads performed in this job
 
@@ -677,12 +677,12 @@ sub setDirVals
 	if(($directory =~ m/^\//) or ($directory =~ m/^\\/))
 	{
 		#dir is absolute
-		&echo("This directory is absolute");		
+		&echo("This directory is absolute");
 	}
 	else
 	{
 		#dir is relative
-		#&echo("This directory is relative\n");		
+		#&echo("This directory is relative\n");
 		if($opts{windows})
 		{
 			$directory = $WorkingDir . "\\" . $directory;
@@ -723,8 +723,8 @@ sub createDir
 		&logIt("YOU DO NOT HAVE PERMISSION TO WRITE TO $WorkingDir!!\nPlease choose a writeable location\n\n");
 		&terminate();
 	}
-	
-	
+
+
 	if($useDLdir == 1)
 	{
 		&echo("Printing to $directory\n\n");
@@ -771,7 +771,7 @@ my $numTimegateHits = 0;
 my $numRecoveredIA = 0;			##need to implement
 my $numRecoveredBing = 0;		##need to implement
 my $numRecoveredGoogle = 0;		##need to implement
-my $numRecoveredWC = 0;	
+my $numRecoveredWC = 0;
 my $numRecoveredDiigo = 0;		##need to implement
 my $numRecoveredUK = 0;			##need to implement
 my $numFromListerQueries = 0;
@@ -785,13 +785,13 @@ my $unclobbered = 0;
 my $totalFailed = 0;
 my $imgsRecovered = 0;
 my $htmlRecovered = 0;
-my $otherRecovered =0; 
+my $otherRecovered =0;
 
 ##performance
 my $startTime = 0;			##need to implement
 my $endTime = 0;			##need to implement
 my $runTime = 0;			##need to implement
-my $unvisitedFrontier = 0;		
+my $unvisitedFrontier = 0;
 
 ##maybe in the future we should have time per retrieval request?
 
@@ -800,7 +800,7 @@ my $unvisitedFrontier = 0;
 #foreach my $repo (@Repo_names) {
 #                my $file_count = "file_$repo";
 #                $Stats{$file_count} = 0;
-#                my $query_count = $repo . "_query_count";  # Total queries 
+#                my $query_count = $repo . "_query_count";  # Total queries
 #                $Stats{$query_count} = 0;
 #        }
 
@@ -810,7 +810,7 @@ my $unvisitedFrontier = 0;
 print( "Warrick version $Version by Frank McCown, adapted by Justin F. Brunelle\n");
 &logIt( "Warrick version $Version by Frank McCown, adapted by Justin F. Brunelle\n");
 &echo( "PID = $pid\nMachine name = $Host\n\n");
-	
+
 if ($Verbose == -1) {
 	&echo("Options are:\n");
 	while ((my $option, my $value) = each(%opts)) {
@@ -862,7 +862,7 @@ if (defined $opts{download_dir}) {
 	}
 
 	chdir $directory or die "Could not change directory to $directory: $!\n";
-	&echo("Setting up: Download to directory: " . $directory . "\n\n"); 
+	&echo("Setting up: Download to directory: " . $directory . "\n\n");
 }
 
 # An array to hold the response from the timegate (EOL delimited)
@@ -887,7 +887,7 @@ if(!defined $opts{input_file} && !defined $opts{resume_file})
 	{
 		$Url_start = lc($Url_start);
 	}
-     
+
 	#create a URI object to make parsing easier...
 	$url_o = new URI::URL $Url_start;
 
@@ -915,7 +915,7 @@ if(!defined $opts{input_file} && !defined $opts{resume_file})
 	if($useDLdir == 0)
 	{
 		$directory = $WorkingDir . "/" . $directory;
-		
+
 		if($opts{windows})
 		{
 			#$directory = UrlUtil::WindowsConvertUrlPath($directory);
@@ -979,7 +979,7 @@ elsif(!defined $opts{resume_file})
 		else
 		{
          		$fFrontier[$j] = &trim($fFrontier[$j]);
-			
+
 	                push(@Url_frontier, &trim($fFrontier[$j]));
 
 			if(defined $opts{ignore_case_urls})
@@ -995,7 +995,7 @@ elsif(!defined $opts{resume_file})
 	#create a URI object for easier URI parsing...
 	$url_o = new URI::URL $Url_start;
 	$curTestUrl = $Url_start;
-	
+
 	if(defined $opts{ignore_case_urls})
         {
                 $url_o = lc($url_o);
@@ -1017,14 +1017,14 @@ elsif(!defined $opts{resume_file})
 	if($useDLdir == 0)
 	{
 		$directory = $WorkingDir . "/" . $Domain;
-	
+
 		if($opts{windows})
 		{
 			#$directory = UrlUtil::WindowsConvertUrlPath($directory);
 		}
 		&echo("changing to $directory\n\n");
 	}
-        
+
         &begin_recovery();
 
 	## extract the links from each file recovered
@@ -1038,7 +1038,7 @@ elsif(!defined $opts{resume_file})
 ###################
 #This is the beginning of the frontier recovery. Everything to this point
 # has been recovering the first file and handling the special case of
-#an input file for recover. Now, we will cycle through the frontier to 
+#an input file for recover. Now, we will cycle through the frontier to
 # recover each of the files and add referenced pages until the recovery
 #is complete.
 #The rest of this section is the skeleton of the Warrick recovery algorithm.
@@ -1086,7 +1086,7 @@ for($i = $frontierIndex; $i < $#Url_frontier + 1; $i++)
 	my $tm = $Mementos[0];
 	&echo ("My memento to get: |$tm|\n\n");
 
-	##if the timemap is null, then there was probably a 404 or other failure at the proxy, and we 
+	##if the timemap is null, then there was probably a 404 or other failure at the proxy, and we
 	##should just ignore the URI and move to the next.
 	if(!(&trim($tm) eq NULL))
 	{
@@ -1098,7 +1098,7 @@ for($i = $frontierIndex; $i < $#Url_frontier + 1; $i++)
         	my $testStr = &trim($nextFile[0]);
         	if($testStr eq "" && ($IS_MCURL eq 0))
         	{
-			##if the recovery failed, try the backup memento... 
+			##if the recovery failed, try the backup memento...
 			&echo("trying the backup memento...\n\n");
         	        push(@nextFile, &recover_resource($backupMem, $Path));
         	}
@@ -1135,12 +1135,12 @@ print("\n\n\n Frontier Exhausted. Recovery Complete!\n\n");
 
 sub begin_recovery()
 {
-	#######################	
+	#######################
 	#This function starts the recovery process by getting the memento
 	#and timemap of the start URL
 	#Then, the memento is recovered, the links extracted, and the frontier
-	# populated 
-	#######################	
+	# populated
+	#######################
 
 	##test for write permissions on this directory
 	if(!(-w $directory))
@@ -1149,8 +1149,8 @@ sub begin_recovery()
 		&logIt("YOU DO NOT HAVE PERMISSION TO WRITE TO $directory!!\nPlease choose a writeable location\n\n");
 		&terminate();
 	}
-	
-	
+
+
 	if(!defined $opts{download_dir} || $useDLdir != 1)
 	{
 		createDir();
@@ -1192,9 +1192,9 @@ sub begin_recovery()
 
 sub soft404test
 {
-	#######################	
+	#######################
 	#This function is not yet implemented, but may be needed down the road to detect soft 404s.
-	#######################	
+	#######################
 
 	#####not sure we care about soft 404s. it might be reassuring to the user to have all of the files recovered, even if the recovered file tells us that the
 		####archive didn't have a copy
@@ -1221,11 +1221,11 @@ sub curlIt ($)
 	##end commenting
 
 
-	#######################	
+	#######################
 	#This function essentially just executes a curl for a URI. This function is primarily used as a way to access the
 	# timegates and timemaps. It takes a URI and returns the Timemap. It also considers cached copies before
 	# making a hit to the timegate.
-	#######################	
+	#######################
 
 	###########everything in this function pertaining to caches is incorrect. I need to go back and correct it later.
 		###It only works with MCURL, but doesn't work with CURL...
@@ -1282,11 +1282,11 @@ sub curlIt ($)
 
 sub get_memento($)
 {
-	#######################	
+	#######################
 	#This function takes a URI and finds the timemap for the target URI.
 	#It then extracts the target memento from the timemap and returns it
 	#for recovering.
-	#######################	
+	#######################
 
 	my $url4tm = $_[0];		#the URL to find the timemap for
 
@@ -1343,7 +1343,7 @@ sub get_memento($)
 	{
 		$opts{no_cache} = 1;
 		$timegate = getNextTimeGate();
-		$toSplit = curlIt($timegate . $url4tm);		
+		$toSplit = curlIt($timegate . $url4tm);
 		$numIterations++;
 		$c++;
 	}
@@ -1376,16 +1376,16 @@ sub get_memento($)
 			&echo("\n\n Found Location as " . $m . " as $location\n\n");
 			push(@Mementos, $location);					##adding the memento to our list of mementos to recover
 		}
-	
+
 		##We should also find the backup memento, which will exist in the Link header field
 		if($frag =~ m/Link: /)
 		{
 			##getting stuff like this: ,<MEMURI>;rel="prev memento";datetime="Wed, 02 Jun 2004 08:01:55 GMT",
 			my $tmp = &trim($m);
-		
+
 			##search for the prev memento tag...
 			my @tempArr = split(/\"prev memento\"/, $tmp);
-			
+
 			##if there is no previous memento, then find the first memento
 			if($#tempArr == 0)
 			{
@@ -1404,16 +1404,16 @@ sub get_memento($)
 
 sub normalize_url
 {
-	#######################	
+	#######################
 	#We have to make sure URIs are usable, and have http:// and such. This function
 	#takes a URI as a parameter, fixes and normalizes it, then returns it.
-	#######################	
+	#######################
 
 	# Input: URL to be modified
         # Returns: Modified URL
         #
-        # Several modifications are made to a URL:  
-        # - Add '/' if missing at end of domain name     
+        # Several modifications are made to a URL:
+        # - Add '/' if missing at end of domain name
         #               Example: http://foo.org -> http://foo.org/
         # - Remove the fragment (section link) from a URL
         #       Example: http://foo.org/bar.html#section1 -> http://foo.org/bar.html
@@ -1423,7 +1423,7 @@ sub normalize_url
         #               Example: http://foo.org/../a/b/../bar.html -> http://foo.org/a/bar.html
         # - Convert the domain name to lower case
         #               Example: http://FOO.ORG/BAR.html -> http://foo.org/BAR.html
-        # - Remove 'www.' prefix (or add it) depending on what is used in the      
+        # - Remove 'www.' prefix (or add it) depending on what is used in the
         #       start URL.
         #               Example: http://www.foo.org/bar.html -> http://foo.org/bar.html
         # - Remove index.html at the end
@@ -1438,13 +1438,13 @@ sub normalize_url
         my $old_url = $url;
 
 	##some people are inputting http://http://<URL>. this protects against that
-	##fix for bug #10 
+	##fix for bug #10
 	while($url =~ m/http:\/\/http:\/\//i)
 	{
 		$url =~ s/http:\/\/http:\/\//http:\/\//i;
 	}
 	#$url =~ s/http:\/\/http:\/\//http:\/\//ig;
-	
+
 
         # Get rid of index.html at the end.  We assume all URLs that end with a
         # slash are pointing to index.html (although this of course is not always
@@ -1462,14 +1462,14 @@ sub normalize_url
                         $url =~ s|/index.html$|/|;  # Default behavior
 		}
         }
-   
+
         if ($url !~ m|^(https?://)|) {
                 $url = "";
         }
         else {
                 $url = UrlUtil::NormalizeUrl($url);
                 $url = url_normalize_www_prefix($url);
-	
+
 	#	if(($url eq ''))
 	#	{
 	#		print "This is an invalid URI!!\n\n";
@@ -1487,21 +1487,21 @@ sub normalize_url
 ###########################################################################
 
 sub url_normalize_www_prefix {
-	#######################	
+	#######################
 	#This function takes a URI as a parameter. It determines whether or not
 	# the www prefix is needed and returns the URI after fixing it.
-	#######################	
+	#######################
 
 
         my $url = shift;
-    
+
         # Make url use 'www.' prefix if $Domain uses it.  Remove the prefix
         # if $Domain doesn't use it.
 
         #print STDERR "testing [$url]\n";
         my ($domain) = $url =~ m|^https?://([^/]+?)(:\d+)?/|;
         return $url if (!defined $domain);
-    
+
         #if (defined $Domain && $Domain ne $domain) {
         #        # See if one of these has an added 'www.' prefix
         #        if ($Domain =~ /^www\./) {
@@ -1522,7 +1522,7 @@ sub url_normalize_www_prefix {
         #        }
         #}
 
-	
+
 
         return $url;
 }
@@ -1531,21 +1531,21 @@ sub url_normalize_www_prefix {
 ###########################################################################
 
 sub recover_resource($){
-	#######################	
+	#######################
 	#This function is really the heart of the Warrick program.
 	# This function takes a memento URI as a parameter, recovers it, and
 	#add its referenced links to the frontier. However, this is more complicated
-	# than it seems. Since memento file names may change upon archiving, and 
+	# than it seems. Since memento file names may change upon archiving, and
 	# since some archives use archive-specific URIs when linking to other pages,
-	#this can become quite complex. 
+	#this can become quite complex.
 	###
 	#It is the goal of the development team to implement the new mcurl wrapper
 	#to retrieve and download mementos. This will simplify the problems
 	#encountered in this function, as well as eliminate some of the directories
 	#created as biproducts of the recovery
-	#######################	
+	#######################
 
-	
+
 	#$_[0] = memento uri
 	#$_[1] = live url
 
@@ -1567,7 +1567,7 @@ sub recover_resource($){
 	}
 
 	#wget flags to use:
-	# -T seconds	
+	# -T seconds
 	# -k == --convert-links
 	# -p --page-requisites
 	# -nd --no-directories
@@ -1662,7 +1662,7 @@ sub recover_resource($){
 		$outfile = $outfile . ".html";
 	}
 
-	###For some reason, the path for saving the file is getting junk values in it. Particularly, there were a lot of 
+	###For some reason, the path for saving the file is getting junk values in it. Particularly, there were a lot of
 	##duplicate $WorkingDir values. This is a section with a bunch of debugging output and hacking together a solution
 	##for this issue. Again, this will all go away once the mcurl option is implemented.
 	&logIt("\n\nremoving duplicate paths 1: $targetPath =>");
@@ -1696,7 +1696,7 @@ sub recover_resource($){
 			$tmp=`mkdir .\\"$realBase"`;
 		}
 		else
-		{			
+		{
 			$tmp=`mkdir ./"$realBase"`;
 		}
 		$dirsSoFar = $realBase;
@@ -1707,7 +1707,7 @@ sub recover_resource($){
 	for(my $i = 0; $i < $#Dirs; $i++)
 	{
 		my $d = $Dirs[$i];
-	
+
 		if($opts{windows})
 		{
 			$dirsSoFar = $dirsSoFar . "\\" . $d;
@@ -1734,7 +1734,7 @@ sub recover_resource($){
 
 		}
 	}
-	
+
 	if($diffHosts eq 1)
 	{
 		if($opts{windows})
@@ -1763,9 +1763,9 @@ sub recover_resource($){
 	if($outfile =~ m/webcitation\.org/i)
 	{
 		$outfile = $outfile . "_webcitation" . $numDls;
-	}	
+	}
 
-	##checking to make sure this file hasn't been downloaded before. If this file exists in this directory, 
+	##checking to make sure this file hasn't been downloaded before. If this file exists in this directory,
 	#and no clobber is on, we won't download it again
 	if(defined $opts{no_clobber})
 	{
@@ -1799,9 +1799,9 @@ sub recover_resource($){
 	##get memento
 	my $timegate = getNextTimeGate();
 
-	####there's a bunch of junk in here that is residual from mcurl's failed implementation	
+	####there's a bunch of junk in here that is residual from mcurl's failed implementation
 	my $wgetCmd = "";
-	
+
 	if($IS_MCURL eq 1)
 	{
 		if($opts{windows})
@@ -1818,21 +1818,21 @@ sub recover_resource($){
 	{
 		$wgetCmd = "curl -D \"$directory/logfile.o\" -L -o \"$outfile\" \"$urlToGet\""; 	##this option is just for the curl command
 	}
-	
+
 	#&echo("\n\n normal curling: $wgetCmd\n\n");
 	&echo("\n\n mcurling: $wgetCmd\n\n");
 
 
 	##there's a bunch of junk commented out here that is residual testing from mcurl's failed implementation
 	my $tmp;
-	my $dlFiles;	
+	my $dlFiles;
 
 	if($opts{windows})
 	{
 		#$outfile = UrlUtil::WindowsConvertUrlPath($outfile);
 		#$directory = UrlUtil::WindowsConvertUrlPath($directory);
 	}
-	
+
 	$totalAttempts = 0;
 
 	my $cacheCmd = $urlToGet . $drHeaders;
@@ -1869,7 +1869,7 @@ sub recover_resource($){
 			##so that the links can be extracted out of them
 			#my @dlFiles = getFileNames("$directory/" . "logfile.o");
 			#$dlFiles = getFileNames("$directory/" . "logfile.o", $outfile);
-		
+
 			if($opts{windows})
 			{
 				$dlFiles = getFileNames("$directory\\" . "logfile.o", $outfile, $urlToGet);
@@ -1900,7 +1900,7 @@ sub recover_resource($){
 		{
 			print "Reached max number of downloads: $numDls\n";
 			&logIt("Reached max number of downloads: $numDls\n");
-			
+
 			&saveState();
 
 			&terminate();
@@ -1931,7 +1931,7 @@ sub convertWebCitation($)
 {
 	my $webCitationUri = $_[0];
 	my $targetOutFile = $_[1];
-	
+
 	my $RECO_FILE = substr($directory, 0, length($directory)) . "_recoveryLog.out";
 
 	##converting webcitation pages to content that is usable for our purposes
@@ -1953,7 +1953,7 @@ sub convertWebCitation($)
 sub getOriginal($)
 {
 	my $toParse = $_[0];
-	
+
 	if($toParse =~ m/rel=\"original\"/i)
 	{
 		my @tmp = split(/>;rel=\"original\"/, $toParse);
@@ -1972,13 +1972,13 @@ sub getOriginal($)
 
 sub getFileNames($)
 {
-	#######################	
+	#######################
 	#This function reads the logfile from the retrieval operation and
-	#extracts all of the downloaded files from the log. 
+	#extracts all of the downloaded files from the log.
 	## If using wget: Since we
 	#may be downloading prerequisite resources, multiple files can
-	#be downloaded. 
-	#######################	
+	#be downloaded.
+	#######################
 
 	###now returns 1 for a succesful download and a 0 for a failed DL.
 
@@ -1996,7 +1996,7 @@ sub getFileNames($)
 	# read file into an array
 	my @data = <FILE>;
 
-	# close file 
+	# close file
 	close(FILE);
 
 	if($opts{TEST})
@@ -2012,7 +2012,7 @@ sub getFileNames($)
 	{
 		&echo("\nUnable to download...\n");
 		if($t =~ m/404 NOT FOUND/i)
-		{	
+		{
 			&echo("Resource not archived.\n\n");
 			writeToRecoLog($RECO_FILE, "FAILED:: $_[2] => NOT ARCHIVED => $targetOutfile");
 		}
@@ -2028,9 +2028,9 @@ sub getFileNames($)
 	for(my $i = 0; $i < $#data+1; $i++)
 	{
 		$data[$i] = trim($data[$i]);
-		
+
 		if($data[$i] =~ m/Location\:/i)
-		{	
+		{
 			writeToRecoLog($RECO_FILE, "$_[2] => " . trim($data[$i]) . " => $targetOutfile");
 		}
 		if($data[$i] =~ m/Location\:/i && $data[$i] =~ m/webcitation\.org/i)
@@ -2039,7 +2039,7 @@ sub getFileNames($)
 
 			&echo("Found Webcitation page: $data[$i] > $targetOutfile\n\n");
 			&convertWebCitation($data[$i], $targetOutfile);
-			push(@filesToReturn, trim($data[$i])); 
+			push(@filesToReturn, trim($data[$i]));
 		}
 
 	}
@@ -2086,12 +2086,12 @@ sub removeBranding($)
 	        print "js1\n";
 	}
 	if($html =~ s/var wmHide.+\n//gi)
-	{        
-	        print "got JS2\n";            
+	{
+	        print "got JS2\n";
 	}
 	if($html =~ s/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*<!-- END WAYBACK TOOLBAR INSERT -->//sgi)
-	{        
-	        print "got IA1\n";            
+	{
+	        print "got IA1\n";
 	}
 
 	#print "FOREACH\n";
@@ -2099,8 +2099,8 @@ sub removeBranding($)
 	&echo("Removing webcitation junk from the beginning\n\n");
 
 	if($html =~ s/Content\-Type\: text\/html//i)
-	{        
-	        print "got CT1\n";            
+	{
+	        print "got CT1\n";
 	}
 
 	&echo("Removing google junk\n\n");
@@ -2112,7 +2112,7 @@ sub removeBranding($)
 	{
 	        print "got GG2\n";
 	}
-	if($html =~ s/<meta http\-equiv\=\"Content\-Type\" content\=\"text\/html; charset\=UTF\-8\">//gi)        
+	if($html =~ s/<meta http\-equiv\=\"Content\-Type\" content\=\"text\/html; charset\=UTF\-8\">//gi)
 	{
 	        print "got GG3\n";
 	}
@@ -2129,20 +2129,20 @@ sub removeBranding($)
                 print "got IA1\n";
 	}
 
-	if($html =~ s/<!--\s*FILE ARCHIVED ON.*All versions<\/a> of this archived page\.//sgi)                
+	if($html =~ s/<!--\s*FILE ARCHIVED ON.*All versions<\/a> of this archived page\.//sgi)
 	{
                 print "got IA2\n";
 	}
 
 	#national archive removal
-	if($html =~ s/<div id\=\"webArchiveLogo\".*<\/noscript><\/div>\s*<\/div>//sgi)                        
+	if($html =~ s/<div id\=\"webArchiveLogo\".*<\/noscript><\/div>\s*<\/div>//sgi)
 	{
                 print "got IA1\n";
 	}
 
 
 	&echo("Removing other? junk\n\n");
-	
+
 
 
 	open (DAT, ">$filename");
@@ -2158,7 +2158,7 @@ sub removeIAlinks($)
 	{
 		&echo("exiting out of ia links...\n\n");
 		return;
-	}	
+	}
 
 	open(DAT, $filename);
 	my @content = <DAT>;
@@ -2174,14 +2174,14 @@ sub removeIAlinks($)
 }
 
 sub extract_links($) {
-	#######################	
+	#######################
 	#This function takes a filename as a parameter, reads it,
 	#extracts the links of the file, and adds them to the URL_frontier
 	#It has to make sure the URIs are appropriate for recovery, though.
-	#######################	
+	#######################
 
 	# Extract all http and https urls from this cached resource that we have
-	# not seen before.   
+	# not seen before.
 
 	my $outfile = $_[0];
 
@@ -2203,15 +2203,15 @@ sub extract_links($) {
 	else
 	{
 		$otherRecovered++;
-	}	
+	}
 
-	my $targetFile =  trim($outfile);	
+	my $targetFile =  trim($outfile);
 
 	&echo("Search HTML resource $targetFile for links to other missing resources...\n");
 
 	open(DAT, $targetFile) or &echo("No such file $targetFile\n\n");
 	my @raw_data=<DAT>;
-	my $contents = join("\n", @raw_data);	
+	my $contents = join("\n", @raw_data);
 	close(DAT);
 
 	if($#raw_data < 0)
@@ -2245,9 +2245,9 @@ sub extract_links($) {
 		#return 0;
 	}
 
-	
+
 	my %new_urls;
-	
+
 
 	##foreach of the links extracted, figure out if they are suitable.
 	foreach my $url1 (@links) {
@@ -2260,7 +2260,7 @@ sub extract_links($) {
 			$url1 = "http://" . trim($tempURI->host) . "" . $tempURI->path . $url1;
 		}
 
-		
+
 		#print "Before: $url1\n";
 		# Get normalized URL - strip /../ and remove fragment, etc.
 		$url1 = normalize_url($url1);
@@ -2269,11 +2269,11 @@ sub extract_links($) {
 
 		if(defined $opts{ignore_case_urls})
 		{
-			$url1 = lc($url1);	
+			$url1 = lc($url1);
 		}
 
 		# See if this link should be recovered later
-		if ($url1 ne "" && is_acceptable_link($url1)) {				
+		if ($url1 ne "" && is_acceptable_link($url1)) {
 
 			$GLOBALURL1 = $url1;
 
@@ -2295,7 +2295,7 @@ sub extract_links($) {
 			#not acceptable link
 		}
 	}
-	
+
 	#print "Length: $#Url_frontier\n";
 
 	##after recovery is complete, we must convert all URLs to relative if the user specified this command
@@ -2303,7 +2303,7 @@ sub extract_links($) {
 	{
 		allRelative(&trim($targetFile));
 	}
-	
+
 	if(!defined $opts{keep_branding})
 	{
 		removeBranding($targetFile);
@@ -2317,11 +2317,11 @@ sub extract_links($) {
 ###########################################################################
 
 sub is_acceptable_link {
-	#######################	
+	#######################
 	#This function takes a URI as a parameter and returns 1 is the link warrants recovery
 	# Return 1 if this link is acceptable to be recovered
-	# according to the command line options, or return 0 otherwise.	
-	#######################	
+	# according to the command line options, or return 0 otherwise.
+	#######################
 
 	my $link = $_[0];  # URL to check
 
@@ -2347,7 +2347,7 @@ sub is_acceptable_link {
 	{
 		&echo("Found an email: $link\n\n");
 		return 0;
-	}	
+	}
 
 	if($link =~ m/javascript:$/i || $link =~ /javascript:$/i || $link =~ m/javascript:;$/i)
 	{
@@ -2356,18 +2356,18 @@ sub is_acceptable_link {
 	}
 
 	$link = UrlUtil::ConvertUrlToLowerCase($link) if $opts{ignore_case_urls};
-	
+
 	my $url = URI::URL->new($link);
 
 	my $url2;
 	$url2 = URI::URL->new($Url_start);
-	
+
 	##debugging testing...just leaving this for now.
-	if($useInFile == 1) 
+	if($useInFile == 1)
         {
 		$url2 = URI::URL->new($curTestUrl);
         }
-	
+
 	##verify this link belongs to the subdirectory, if the option was used
 	my $subPath = $url2->host() . $url2->path();
 	#print "MY subdir values: $SUBDIR...$opts{subdir}\nchecking against $subPath\n\n";
@@ -2388,7 +2388,7 @@ sub is_acceptable_link {
 	}
 	#print "outside if: $link\n";
 	#exit();
-	
+
 
 	##verify this link does not match one of the patterns in the provided exclusion file
 	if(defined $opts{exclude}
@@ -2420,21 +2420,21 @@ sub is_acceptable_link {
 	##(they must be from the same site in order to be added to the frontier)
 	my $host = $url2->host();
 	my $recHost = $url->host();
-	
+
 	$host =~ s/www.//i;
 
 	# Don't use $url->path since it could make Warrick die when on a URL like
 	# http://www.whirlywiryweb.com/q%2Fshellexe.asp because the %2F converts to a /
 	my $path = $url->epath;
-	
+
 	my $port = $url->port;
-							
+
 	# Don't allow links from unallowed domains
 	if (!($host =~ m/$recHost/i) && !($recHost =~ m/$host/i)) {
 		&logIt("  Rejected url because [$host] is not $recHost....or visa versa\n");
 		return 0;
 	}
-	
+
 	# Don't allow URLs unless they are using the same port as the starting URL
 	# https uses port 443, and it's ok
 	if (undef ($opts{input_file}) && $Url_start_port != $port && $port != 443) {
@@ -2476,9 +2476,9 @@ sub is_acceptable_link {
 ###########################################################################
 
 sub print_help {
-	#######################	
+	#######################
 	#This function simply prints the commandline options and a few examples
-	#######################	
+	#######################
 
 	print <<HELP;
 
@@ -2500,14 +2500,14 @@ OPTIONS:
 
    -E  | --html-extension	Save non-web formats as HTML
 
-   -ic | --ignore-case		Make all URIs lower-case (may be useful when 
+   -ic | --ignore-case		Make all URIs lower-case (may be useful when
 				        recovering files from Windows servers)
 
    -i  | --input-file=F		Recover links listed in file F (non-recursively)
 
    -k  | --convert-links	Convert links to relative
 
-   -l  | --limit-dir=L		limit the depth of the recover to the provided 
+   -l  | --limit-dir=L		limit the depth of the recover to the provided
                                         directory depth L
 
    -n  | --number-download=N	limit the number of resources recovered to N
@@ -2523,7 +2523,7 @@ OPTIONS:
    -nr | --non-recursive	Don't download additional resources listed as links
 					in the downloaded resources. Effectively
 					downloads a single resource.
-   -sd				Only download  resources in this subdirectory 
+   -sd				Only download  resources in this subdirectory
 					(won't recovery anything in the parent
 					directories).
 
@@ -2531,30 +2531,30 @@ OPTIONS:
 
    -w  | --wait=W		Wait for W seconds between URLs being recovered.
 
-   -R  | --resume=F		Resume a previously started and suspended recovery 
+   -R  | --resume=F		Resume a previously started and suspended recovery
 					job from file F
    -B  				Keep the branding or headers from the archives from
 					which the memento was recovered.
    -nB				Remove the branding from the archives (this is the
 					default)
-   -ex | --exclude=F		Exclude (do not recover) URIs that meet the regular 
-				expressions listed (newline delimited) in the specific 
+   -ex | --exclude=F		Exclude (do not recover) URIs that meet the regular
+				expressions listed (newline delimited) in the specific
 				file F
    -a | --archive=[ia|wc|ai|loc|uk|eu|bl|b|g|y|aweu|nara|cdlib|diigo|can|wikia|wiki]
 				Specify the archive to recover resources from. Specify
 					a single archive. Options are [Internet Archive|
 					Web Citation|Archive-It|Library of Congress|
-					National Archives of UK|ArcheifWeb|British 
+					National Archives of UK|ArcheifWeb|British
 					Library|Bing|Google|Yahoo|Archiefweb|
 					nara|CDLib|Diigo|Canadian Archives|Wikia|Wiki]
-					
+
 
 EXAMPLES
 
    Reconstruct entire website with verbose output turned off:
 
       ./warrick.pl -nv http://www.example.com/
-	  
+
    Reconstruct a single page and save output
    to warrick_log.txt:
 
@@ -2563,21 +2563,21 @@ EXAMPLES
    Stops after storing 10 files:
 
       ./warrick.pl -n 10 http://www.example.com/
-      
+
    Recover an entire site to the TEST directory, make all internal links
    relative to this machine, and recover up to 100 mementos:
-   
+
       ./warrick.pl -D TEST -n 100 -k http://www.example.com/
-	  
+
    Recover an entire page as it existed (or as close as possible to) Feb 1, 2004,
    and keep the branding headers inserted by different archives:
-   
+
       ./warrick.pl -dr 2004-02-01 -B http://www.example.com/
 
    Resume a previously suspended recovery job from a save file:
 
       ./warrick.pl -R 1234_myserver.save
-      
+
 HELP
 }
 #-a | --archive=[ia|wc|ai|loc|uk|eu|bl|b|g|y|aweu|nara|cdlib|diigo|can|wikia|wiki]
@@ -2586,10 +2586,10 @@ HELP
 
 sub inArray($)
 {
-	#######################	
+	#######################
 	#This function determines if a certain needle is in an array haystack
 	#more specifically, it determines if a URL currently exists in the frontier
-	#######################	
+	#######################
 
 	#my $needle = $GLOBALURL1;
 	my $needle = $_[0];
@@ -2598,7 +2598,7 @@ sub inArray($)
 	{
 		my $h = $Url_frontier[$i];
                 my $n = $needle;
-		
+
 
 		##if we found the URL in the Array
 		if($h eq $n)
@@ -2612,10 +2612,10 @@ sub inArray($)
 
 sub trim($)
 {
-	#######################	
+	#######################
 	#This function takes a string as input and returns the same string without
 	#leading and trailing whitespace
-	#######################	
+	#######################
 
 	my $string = shift;
 	$string =~ s/^\s+//;
@@ -2625,18 +2625,18 @@ sub trim($)
 
 sub isValidDate($)
 {
-	#######################	
-	#This function takes a string as a paramter and determines if it is a 
+	#######################
+	#This function takes a string as a paramter and determines if it is a
 	#valid date string or not. It uses the PERL functions to do this.
-	#######################	
+	#######################
 
 	###checks for format as follows:
 		###Accept-Datetime: Thu, 31 May 2007 20:35:00 GMT
-	
+
 	my $date = $_[0];
-	
+
 	my $time = str2time($date);
-	
+
 	my @tempA = time2str($time);
 
 	if($time <= 0)
@@ -2653,9 +2653,9 @@ sub isValidDate($)
 
 sub isInArchive($)
 {
-	#######################	
+	#######################
 	#This function takes a URL as a parameter and determines if it points to an archive.
-	#######################	
+	#######################
 
 	##need to figure out if a uri is part of an archive, but can't assume that it's memento compliant
 
@@ -2698,9 +2698,9 @@ sub isInArchive($)
 
 sub getNextTimeGate()
 {
-	#######################	
+	#######################
 	#This function gets the next timegate in the round-robin cycle of timegates
-	#######################	
+	#######################
 
 	my $tgI = $numTimegateHits % ($#TimeGates+1);
 	return $TimeGates[$tgI];
@@ -2709,10 +2709,10 @@ sub getNextTimeGate()
 
 sub readCache()
 {
-	#######################	
+	#######################
 	#This function reads the cache off the disk into memory for use by Warrick
 	# the location of the cache contents are on files in the cache folder
-	#######################	
+	#######################
 
 	my $cacheFile = $DirOffset . "/cache.o";
 
@@ -2735,10 +2735,10 @@ sub readCache()
 
 sub isInCache($)
 {
-	#######################	
+	#######################
 	#This function takes a curl command to the timegate and determines if this command
-	#has been cached or not. 
-	#######################	
+	#has been cached or not.
+	#######################
 
 	##if we aren't using the cache, return.
 	if(defined $opts{no_cache})
@@ -2763,7 +2763,7 @@ sub isInCache($)
 
 			##add this entry to the front of the cache.
 			unshift(@tempCache, $CACHE[$i]);
-	
+
 			for(my $j = $i+1; $j < $#CACHE + 1; $j++)
 			{
 				##move everything else back...
@@ -2779,9 +2779,9 @@ sub isInCache($)
 
 sub cacheIt($)
 {
-	#######################	
+	#######################
 	#This function adds a curl command to the timegate to the cache.
-	#######################	
+	#######################
 
 	my $cmdToCache = $_[0];
 	my $fileToCache = $_[1];
@@ -2803,10 +2803,10 @@ sub cacheIt($)
 		{
 			##take the last element off the array
 			my $deleteFile = pop(@CACHE);
-			$deleteFile = $cmdToCache; 
-			
+			$deleteFile = $cmdToCache;
+
 			my $cmd = "rm " . $DirOffset . "/cache/$deleteFile";
-			
+
 			#&echo("Removing from cache: $cmd\n\n");
 
 			if($opts{windows})
@@ -2829,10 +2829,10 @@ sub cacheIt($)
 
 sub getTMfromCache($)
 {
-	#######################	
-	#This function gets a particular timemap that has been cached from the 
+	#######################
+	#This function gets a particular timemap that has been cached from the
 	# disk into memory
-	#######################	
+	#######################
 
 	if(defined $opts{no_cache})
 	{
@@ -2858,7 +2858,7 @@ sub getTMfromCache($)
 	#
 	#		my $tmFile = $CACHE[$i];
         #                $tmFile =~ s/[^a-zA-Z0-9]*//g;
-	#			
+	#
 	#		$tmFile = $DirOffset . "/cache/" . $tmFile;
 	#
 	#		#return $contents;
@@ -2887,9 +2887,9 @@ sub getTMfromCache($)
 
 sub writeCache()
 {
-	#######################	
+	#######################
 	#This function writes out the entire cache
-	#######################	
+	#######################
 
 	my $str = join("\n", @CACHE);
 	my $cacheFile = $DirOffset . "/cache.o";
@@ -2911,9 +2911,9 @@ sub writeCache()
 
 sub print_version()
 {
-	#######################	
+	#######################
 	#This function simply prints the current version
-	#######################	
+	#######################
 
 	print "\n\nWarrick Version 2.3:A - By Justin F. Brunelle\n";
 	print "This version of Warrick has been adapted from Dr. Frank McCown's original version 1.0.";
@@ -2934,9 +2934,9 @@ sub print_version()
 
 sub echo($)
 {
-	#######################	
+	#######################
 	#This function is a wrapper to print to screen and to logfile
-	#######################	
+	#######################
 
 	######function to print if verbose and to log output
 	unless(defined $opts{no_verbose_output})
@@ -2953,9 +2953,9 @@ sub echo($)
 
 sub logIt($)
 {
-	#######################	
+	#######################
 	#This function prints debugging data to a logfile
-	#######################	
+	#######################
 
 	if(defined $opts{output_file})
 	{
@@ -2981,9 +2981,9 @@ sub logIt($)
 
 sub terminate()
 {
-	#######################	
+	#######################
 	#This function terminates the program and writes the current savestate data to a save file
-	#######################	
+	#######################
 
 	&echo("Program terminated.\n\n-----------------------\n\n\n");
 
@@ -2998,9 +2998,9 @@ sub terminate()
 
 
 sub special_url($){
-	#######################	
+	#######################
 	#This function takes a URI as a paramter and determines if it is a non-web native format
-	#######################	
+	#######################
 
         # Return 1 if url/filename has a pdf, doc, ppt, xls,$
 
@@ -3022,10 +3022,10 @@ sub special_url($){
 
 sub allRelative($)
 {
-	#######################	
+	#######################
 	#This function takes a filename as a parameter and converts all of the links inside of it to relative
 	#This will allow recovered files to be viewed locally on a machine
-	#######################	
+	#######################
 
 	my $targetFilePath = $_[0];
 
@@ -3058,8 +3058,8 @@ sub allRelative($)
 	#print "Testing!!\n\n";
 	#print "$url2 ==>\n";
 	#print "$host ===> $path ===>\n";
-	
-	my $replace = "";	
+
+	my $replace = "";
 
 	foreach my $pc (@pathComponents)
 	{
@@ -3077,7 +3077,7 @@ sub allRelative($)
 
 	#print "\n\n$replace will get you to $host from $path\n\n";
 
-	#replace the host name 
+	#replace the host name
 	#&echo("Running sed -i 's/$host/\/./g' $targetFilePath\n");
 	&echo("Running sed -i 's/$host/$replace/g' $targetFilePath\n");
 	#my $tmp = `sed -i 's/$host/\.\\//g' "$targetFilePath"`;
@@ -3133,7 +3133,7 @@ sub allRelative($)
 		{
 			$data[$i] = "";
 		}
-	}	
+	}
 
 
 	open(MYOUT, ">$targetFilePath");
@@ -3148,11 +3148,11 @@ sub allRelative($)
 
 sub saveState()
 {
-	#######################	
+	#######################
 	#This function writes the current state of a recovery job to a file, with the intent
 	#of the job being resumed later. Several identifying features are written, as well as
 	#the current state of the frontier.
-	#######################	
+	#######################
 
 	&echo("saving...\n");
 	my $saveFile = getpid() . "_" . hostname() . ".save";
@@ -3173,8 +3173,8 @@ sub saveState()
 
 	open(SAVE, ">$saveFile") or die "couldn't open save file...\n";
 	print SAVE "<pid>9</pid>\n";
-	print SAVE "<unvisitedFrontier>0</unvisitedFrontier>\n";		
-	close(SAVE);	
+	print SAVE "<unvisitedFrontier>0</unvisitedFrontier>\n";
+	close(SAVE);
 
 	if($LastVisited == NULL || $LastVisited < 0)
 	{
@@ -3195,7 +3195,7 @@ sub saveState()
 	my $saveDir = "<dir>" . &trim($directory) . "</dir>\n";
 
 	my $startUrl = "<startUrl>" . &trim($Url_start) . "</startUrl>\n";
-	
+
 	my $saveFront = "<frontier>\n";
 	for my $f (@Url_frontier)
 	{
@@ -3204,13 +3204,13 @@ sub saveState()
 	$saveFront = $saveFront . "</frontier>\n";
 
 	my $stats;
-	
+
 	##number of requests to the timegate
 	$stats =  "<numTimgateHits>$numTimegateHits</numTimgateHits>\n";
 	$stats .= "<numRecoveredIA>$numRecoveredIA</numRecoveredIA>\n";
 	$stats .= "<numRecoveredBing>$numRecoveredBing</numRecoveredBing>\n";		##need to implement
 	$stats .= "<numRecoveredGoogle>$numRecoveredGoogle</numRecoveredGoogle>\n";		##need to implement
-	$stats .= "<numRecoveredWC>$numRecoveredWC</numRecoveredWC>\n";	
+	$stats .= "<numRecoveredWC>$numRecoveredWC</numRecoveredWC>\n";
 	$stats .= "<numRecoveredDiigo>$numRecoveredDiigo</numRecoveredDiigo>\n";		##need to implement
 	$stats .= "<numRecoveredUK>$numRecoveredUK</numRecoveredUK>\n";			##need to implement
 	$stats .= "<numFromListerQueries>$numFromListerQueries</numFromListerQueries>\n";
@@ -3224,13 +3224,13 @@ sub saveState()
 	$stats .= "<totalFailed>$totalFailed</totalFailed>\n";
 	$stats .= "<imgsRecovered>$imgsRecovered</imgsRecovered>\n";
 	$stats .= "<htmlRecovered>$htmlRecovered</htmlRecovered>\n";
-	$stats .= "<otherRecovered>$otherRecovered</otherRecovered>\n"; 
+	$stats .= "<otherRecovered>$otherRecovered</otherRecovered>\n";
 
 	##performance
 	$stats .= "<startTime>$startTime</startTime>\n";			##need to implement
 	$stats .= "<endTime>$endTime</endTime>\n";			##need to implement
 	$stats .= "<runTime>$runTime</runTime>\n";			##need to implement
-	$stats .= "<unvisitedFrontier>$unvisitedFrontier</unvisitedFrontier>\n";		
+	$stats .= "<unvisitedFrontier>$unvisitedFrontier</unvisitedFrontier>\n";
 
 	print "saving to file $saveFile\n\n";
 	open(SAVE, ">$saveFile") or die "couldn't open save file...\n";
@@ -3238,7 +3238,7 @@ sub saveState()
 	print SAVE $pid . $Host . $command . $lastSeen . $startUrl;
 	print SAVE $saveDir . $stats . $saveFront;
 
-	close(SAVE);	
+	close(SAVE);
 	&echo("File Saved...\n");
 	&printStats();
 }
@@ -3251,7 +3251,7 @@ sub printStats()
 	{
 		return;
 	}
-	
+
 	print "\n";
 	print "#############################################\n";
 	print "RECOVERY STATISTICS:\n";
@@ -3287,13 +3287,13 @@ sub printStats()
 
 sub resumeState($)
 {
-	#######################	
+	#######################
 	#This function is meant to read the saveState file and set up the job for continuation.
 	##It is not currently functional.
-	#######################	
+	#######################
 
 
-	
+
 	open(DAT,  $_[0]) or die $! . " Could not load resume file $_[0].\n\n";
 	my @resumeData=<DAT>;
 	close(DAT);
@@ -3342,7 +3342,7 @@ sub resumeState($)
 	resumeFlags($commandStr);
 
 	$paramList = $commandStr;
-	
+
 	#&terminate();
 	#my $resumeXml->XMLin($resumeFile);
 }
@@ -3357,54 +3357,54 @@ sub resumeFlags($)
 
 use Getopt::Long qw(:config no_ignore_case);
 use Getopt::Long qw(GetOptionsFromString);
-my $ret = GetOptionsFromString(trim($_[0]), 
+my $ret = GetOptionsFromString(trim($_[0]),
 			# Turn on debug output
 			"d|debug"	=>	\$opts{debug},
-			
+
 			# Save reconstructed files in this directory
 			"D|target-directory=s"	=>	\$opts{download_dir},
-			
+
 			# Set the range of dates to recover from IA
 			"dr|date-recover=s" => \$opts{date_range},
-			
+
 			"h|help"	=>	\$opts{help},
 			"E|html-extension" => \$opts{save_dynamic_with_html_ext},
 
 			# make entire url (except query string) lowercase.  Useful for
 			# web servers running on Windows
 			"ic|ignore-case"	=> \$opts{ignore_case_urls},
-			
+
 			# Read URLs from an input file
 			"i|input-file=s"	=>	\$opts{input_file},
 
 			# Convert all URLs from absolute to relative (uses same names as wget)
 			"k|convert-links" =>	\$opts{convert_urls_to_relative},
-			
+
 			# limit the directory level warrick recovers to
 			"l|limit-dir=i"	=>	\$opts{limit_dir},
-			
+
 			"n|number-download=i"	=>	\$opts{max_downloads_and_store},
-			
+
 			"nv|no-verbose" => \$opts{no_verbose_output},
-			
-			# Don't overwrite files already downloaded.  
+
+			# Don't overwrite files already downloaded.
 			"nc|no-clobber" => \$opts{no_clobber},
-			
+
 			# Don't use the cache.
 			"xc|no-cache" => \$opts{no_cache},
-			
+
 			# Log all output to this file
 			"o|output-file=s"	=>	\$opts{output_file},
-			
+
 			# Look for additional resources to recover
 			"nr|non-recursive" =>  \$opts{recursive_download},
 
 			# Only download  resources in this subdirectory
 			"sd" =>  \$opts{subdir},
-			
+
 			# Show the current version being used
 			"V|version"	=> \$opts{version},
-			
+
 			# Convert a non-html resources to have html extensions
 			"vl|view-local"	=> \$opts{view_local},
 
@@ -3420,11 +3420,11 @@ my $ret = GetOptionsFromString(trim($_[0]),
 			#retain the branding from the archives
 			"B" => \$opts{keep_branding},
 
-			"ex|exclude=s" => \$opts{exclude},			
+			"ex|exclude=s" => \$opts{exclude},
 
 			# Specify an archive
 			"a|archive"	=>	\$opts{archive},
-		) 
+		)
 		#|| exit($!)
 		;
 
@@ -3441,11 +3441,11 @@ my $ret = GetOptionsFromString(trim($_[0]),
 
 sub IAlister()
 {
-	#######################	
+	#######################
 	#This function is meant to take a IA URL of all pages archived from a site and extract the
 	#links for the frontier. This will discover content that may not be linked from the provided
 	#start URI. This is not yet operational.
-	#######################	
+	#######################
 
 	##function to retrieve the listing of archived copies of this resource at IA
 
@@ -3470,7 +3470,7 @@ sub IAlister()
 
 	##finding the domain of the starting URI
 	my $url_o = new URI::URL $Url_start;
-	my $Domain = lc $url_o->host; 
+	my $Domain = lc $url_o->host;
 	$Domain =~ s/www\.//i;
 
 	my $curlCmd = "curl -o $listerOut \"$some_url\"";
@@ -3479,7 +3479,7 @@ sub IAlister()
 	&echo("Domain: $Domain \n\n");
 
 	my $cmd = `$curlCmd`;
-	
+
 	open(FILE, "lister.o") or &echo("Unable to open file lister.o");
         my @data = <FILE>;
         close(FILE);
@@ -3488,7 +3488,7 @@ sub IAlister()
 	my $DataString = join("\n", @data);
 	my $LX = new HTML::LinkExtractor(undef, undef, 1);
 	$LX->parse(\$DataString);
-	
+
 	##Loop through each link, and figure out if the text is part of the URL Domain
 	for my $Link( @{ $LX->links } ) {
 		if($$Link{_TEXT} =~ m/$Domain/i)
@@ -3498,10 +3498,10 @@ sub IAlister()
 			if(!($listedUri =~ m/^http:\/\//i))
 			{
 				$listedUri = "http://$listedUri";
-	                }        
-			
+	                }
+
 	                if(defined $opts{ignore_case_urls})
-	                {	
+	                {
 	                        $listedUri = lc($listedUri);
 	                }
 
