@@ -11,6 +11,7 @@ perl -MCPAN -e 'install URI'
 perl -MCPAN -e 'install CSS'
 perl -MCPAN -e 'install HTTP::Date'
 perl -MCPAN -e 'install Getopt::Long'
+perl -MCPAN -e 'install Config::Tiny'
 
 yum install curl
 

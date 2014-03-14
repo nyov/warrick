@@ -7,7 +7,7 @@
 #
 # Copyright (C) 2005-2010 by Frank McCown
 #
-my $Version = '2.2.2';
+my $Version = '2.3';
 #
 # This program's grandmother was Webrepeaper by Brain D. Foy
 # http://search.cpan.org/dist/webreaper/
@@ -67,6 +67,7 @@ use HTTP::Date;
 use Logger;
 #WWW::Mechanize;
 use HTML::LinkExtractor;	#for link extraction
+use Config::Tiny; # ini-file reading
 
 
 
@@ -249,8 +250,6 @@ if ($^O eq "MSWin32") {
 
 my @Url_frontier = ();
 
-my $TimeGateFile = "timegates.o";
-
 my $SUBDIR = 0;
 if(defined $opts{subdir})
 {
@@ -283,84 +282,26 @@ if(defined $opts{exclude})
 	}
 }
 
-##archive: options:
-#-a | --archive=[ia|wc|ai|loc|uk|eu|bl|b|g|y|aweu|nara|cdlib|diigo|can|wikia|wiki]
-if($opts{archive})
-{
-	&echo("Archive option $opts{archive} chosen...");
+# load timegates from ini file
+my $TimeGateFile = Config::Tiny->new()->read( $DirOffset . '/timegates.ini' );
+my $archive;
 
-	if($opts{archive} =~ /^ia{1,1}/i) {
-		&echo("Internet archive proxies will be used.\n\n");
-		$TimeGateFile = "ia_timegates.o";
-	} elsif($opts{archive} =~ /^wc{1,1}/i) {
-		&echo("Web Citation proxies will be used\n\n");
-		$TimeGateFile = "wc_timegates.o";
-	} elsif($opts{archive} =~ /^ai{1,1}/i) {
-		&echo("Archive-It proxies will be used\n\n");
-		$TimeGateFile = "ai_timegates.o";
-	} elsif($opts{archive} =~ /^loc{1,1}/i) {
-		&echo("Library of Congress proxies will be used\n\n");
-		$TimeGateFile = "loc_timegates.o";
-	} elsif($opts{archive} =~ /^uk{1,1}/i) {
-		&echo("National Archives UK proxies will be used\n\n");
-		$TimeGateFile = "uk_timegates.o";
-	} elsif($opts{archive} =~ /^eu{1,1}/i) {
-		&echo("ArchiefWeb proxies will be used\n\n");
-		$TimeGateFile = "eu_timegates.o";
-	} elsif($opts{archive} =~ /^bl{1,1}/i) {
-		&echo("British Library proxies will be used\n\n");
-		$TimeGateFile = "bl_timegates.o";
-	} elsif($opts{archive} =~ /^b{1,1}/i) {
-		&echo("Bing proxies will be used\n\n");
-		$TimeGateFile = "b_timegates.o";
-	} elsif($opts{archive} =~ /^y{1,1}/i) {
-		&echo("Yahoo! proxies will be used\n\n");
-		$TimeGateFile = "y_timegates.o";
-	} elsif($opts{archive} =~ /^g{1,1}/i) {
-		&echo("Google proxies will be used\n\n");
-		$TimeGateFile = "g_timegates.o";
-	} elsif($opts{archive} =~ /^aweu{1,1}/i) {
-		&echo("Archiefweb proxies will be used\n\n");
-		$TimeGateFile = "aweu_timegates.o";
-	} elsif($opts{archive} =~ /^nara{1,1}/i) {
-		&echo("Archiefweb proxies will be used\n\n");
-		$TimeGateFile = "nara_timegates.o";
-	} elsif($opts{archive} =~ /^cdlib{1,1}/i) {
-		&echo("CDLib proxies will be used\n\n");
-		$TimeGateFile = "cdlib_timegates.o";
-	} elsif($opts{archive} =~ /^diigo{1,1}/i) {
-		&echo("Diigo proxies will be used\n\n");
-		$TimeGateFile = "di_timegates.o";
-	} elsif($opts{archive} =~ /^can{1,1}/i) {
-		&echo("Canadian proxies will be used\n\n");
-		$TimeGateFile = "can_timegates.o";
-	} elsif($opts{archive} =~ /^wikia{1,1}/i) {
-		&echo("Wikia proxies will be used\n\n");
-		$TimeGateFile = "wikia_timegates.o";
-	} elsif($opts{archive} =~ /^wiki{1,1}/i) {
-		&echo("Wikipedia proxies will be used\n\n");
-		$TimeGateFile = "wiki_timegates.o";
-	} else {
-		&echo("\nArchive not recognized. Using aggregate of proxies.\n\n");
+if($opts{archive}) {
+	&echo("Archive option $opts{archive} chosen...\n");
+
+	$archive = $TimeGateFile->{$opts{archive}};
+	if(!$archive) {
+		$archive = $TimeGateFile->{default};
+		&echo("Archive setting not found in config. Falling back to defaults.\n\n");
 	}
 }
-
-if($opts{windows}) {
-	$TimeGateFile = "\\".$TimeGateFile;
-} else {
-	$TimeGateFile = "/".$TimeGateFile;
+if(!$archive) {
+	$archive = $TimeGateFile->{default};
 }
 
-# Array to list all of the known Memento Timegates. This will come from the included
-# timegates.o file. Additional timegates can be added as the code owner discovers them.
 my @TimeGates;
-open(DAT,  $DirOffset . "/$TimeGateFile") or die $! . " $DirOffset/$TimeGateFile";
-@TimeGates=<DAT>;
-close(DAT);
-
-for(my $index = 0; $index < $#TimeGates+1; $index++)
-{
-	$TimeGates[$index] = &trim($TimeGates[$index]);
+foreach my $idx (sort keys %{$archive}) {
+	push(@TimeGates, &trim($archive->{$idx}));
 }
 
 ##handle resume state:
@@ -2427,8 +2368,6 @@ HELP
 	print "#########################################################################\n\n\n\n";
 
 }
-
-#-a | --archive=[ia|wc|ai|loc|uk|eu|bl|b|g|y|aweu|nara|cdlib|diigo|can|wikia|wiki]
 
 #################################################################################
 
